@@ -186,7 +186,7 @@ class Hypergraph:
         
         if len(args.use_eweight_input) > 0:
             tmp = {}
-            with open("dataset/" + args.dataset_name + "/" + args.use_eweight_input + "_hfeatcentrality_" + str(args.k) + ".txt", "r") as f:
+            with open(self.inputdir + args.dataset_name + "/" + args.use_eweight_input + "_hfeatcentrality_" + str(args.k) + ".txt", "r") as f:
                 for line in f.readlines():
                     line = line.rstrip()
                     hedgename, weight = line.split("\t")
