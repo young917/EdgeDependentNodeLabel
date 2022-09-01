@@ -83,6 +83,7 @@ def parse_args():
 
     # data parameter
     parser.add_argument('--dataset_name', default='DBLP2', type=str)
+    parser.add_argument('--inputdir', default='dataset/', type=str)
     parser.add_argument('--exist_hedgename', action='store_true')
     parser.add_argument('--use_gpu', action='store_true')
     parser.add_argument('--k', default=10000, type=int)
