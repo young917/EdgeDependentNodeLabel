@@ -42,6 +42,7 @@ def make_ranking(ls):
 
 class Hypergraph:
     def __init__(self, args, dataset_name):
+        self.inputdir = args.inputdir
         self.dataname = dataset_name
         self.exist_hedgename = args.exist_hedgename
         self.valid_inputname = args.valid_inputname
@@ -87,14 +88,14 @@ class Hypergraph:
     def load_graph(self, args):
         hset = []
         if args.k > 0:
-            with open("dataset/" + self.dataname + "/sampled_hset_" + str(args.k) + ".txt", "r") as f:
+            with open(self.inputdir + self.dataname + "/sampled_hset_" + str(args.k) + ".txt", "r") as f:
                 for line in f.readlines():
                     line = line.rstrip()
                     hset.append(int(line))
                     
         self.max_len = 0
         # construct connection  -------------------------------------------------------
-        with open("dataset/" + self.dataname + "/hypergraph.txt", "r") as f:
+        with open(self.inputdir + self.dataname + "/hypergraph.txt", "r") as f:
             for _hidx, line in enumerate(f.readlines()):
                 if (args.k == 0) or ((args.k > 0) and (_hidx in hset)):
                     tmp = line.split("\t")
@@ -167,7 +168,7 @@ class Hypergraph:
         v_weight = []
         if len(args.use_vweight_input) > 0:
             tmp = {}
-            with open("dataset/" + args.dataset_name + "/" + args.use_vweight_input + "_nodecentrality_" + str(args.k) + ".txt", "r") as f:
+            with open(self.inputdir + args.dataset_name + "/" + args.use_vweight_input + "_nodecentrality_" + str(args.k) + ".txt", "r") as f:
                 f.readline()
                 for line in f.readlines():
                     line = line.rstrip()
@@ -256,7 +257,7 @@ class Hypergraph:
         
         # extract target ---------------------------------------------------------
         print("Extract labels")
-        with open("dataset/" + self.dataname + "/hypergraph_pos.txt", "r") as f:
+        with open(self.inputdir + self.dataname + "/hypergraph_pos.txt", "r") as f:
             for _hidx, line in enumerate(f.readlines()):
                 tmp = line.split("\t")
                 if self.exist_hedgename:
@@ -284,7 +285,7 @@ class Hypergraph:
                     self.v_feat[v] += f
             else:
                 if inputpath == "nodeinfo": # given feature
-                    with open("dataset/" + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r", encoding="utf-8") as f:
+                    with open(self.inputdir + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r", encoding="utf-8") as f:
                         if binning_flag:
                             line = f.readline().rstrip()
                             _, length = line.split("\t")
@@ -312,7 +313,7 @@ class Hypergraph:
                                     else:
                                         self.v_feat[node_reindex].append(float(tmp[i]))
                 else: # feature extracted in advance
-                    with open("dataset/" + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
+                    with open(self.inputdir + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
                         if binning_flag:
                             line = f.readline().rstrip()
                             _, length = line.split("\t")
@@ -345,7 +346,7 @@ class Hypergraph:
 
         for inputpath, binning_flag in zip(args.efeat_input, args.binnings_e):
             if inputpath == "hyperedgeinfo": # given hyperedge feature
-                with open("dataset/" + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r", encoding="utf-8") as f:
+                with open(self.inputdir + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r", encoding="utf-8") as f:
                     if binning_flag:
                         line = f.readline().rstrip()
                         _, length = line.split("\t")
@@ -372,7 +373,7 @@ class Hypergraph:
                                 else:
                                     self.e_feat[hidx].append(float(tmp[i]))
             else:
-                with open("dataset/" + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
+                with open(self.inputdir + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
                     if binning_flag:
                         line = f.readline().rstrip()
                         _, length = line.split("\t")
@@ -407,7 +408,7 @@ class Hypergraph:
         self.rank_dim = len(args.vrank_input)
         for inputpath in args.vrank_input:
             vfeat = {} # node -> vfeat
-            with open("dataset/" + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
+            with open(self.inputdir + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
                 columns = f.readline()
                 columns = columns[:-1].split("\t")
                 for line in f.readlines():
@@ -455,7 +456,7 @@ class Hypergraph:
         else:
             for inputpath in args.erank_input:
                 efeat = {}
-                with open("dataset/" + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
+                with open(self.inputdir + self.dataname + "/" + inputpath + "_" + str(args.k) + ".txt", "r") as f:
                     for line in f.readlines():
                         line = line.rstrip()
                         hedgename, val = line.split("\t")
@@ -524,7 +525,7 @@ class Hypergraph:
 #             for name in test_hedgename:
 #                 f.write(str(name) + "\n")
         if val_ratio > 0:
-            with open("dataset/" + self.dataname + "/" + self.valid_inputname + "_" + str(self.k) + ".txt", "r") as f:
+            with open(self.inputdir + self.dataname + "/" + self.valid_inputname + "_" + str(self.k) + ".txt", "r") as f:
                 for line in f.readlines():
                     name = line.rstrip()
                     if self.exist_hedgename is False:
@@ -532,7 +533,7 @@ class Hypergraph:
                     index = self.hedgeindex[name]
                     valid_index.append(index)
         if test_ratio > 0:
-            with open("dataset/" + self.dataname + "/" + self.test_inputname + "_" + str(self.k) + ".txt", "r") as f:
+            with open(self.inputdir + self.dataname + "/" + self.test_inputname + "_" + str(self.k) + ".txt", "r") as f:
                 for line in f.readlines():
                     name = line.rstrip()
                     if self.exist_hedgename is False:
