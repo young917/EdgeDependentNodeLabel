@@ -67,11 +67,11 @@ def parse_args():
     parser.add_argument('--n_trials', default=50, type=int)
 
     # training parameter
-    # parser.add_argument('--bs', default=64, type=int)
+    parser.add_argument('--bs', default=64, type=int)
     parser.add_argument('--epochs', default=100, type=int)
     parser.add_argument('--optimizer', type=str, default="adam")
     parser.add_argument('--scheduler', default='multi', type=str)
-    # parser.add_argument('--lr', default=0.0005, type=float)
+    parser.add_argument('--lr', default=0.0005, type=float)
     #parser.add_argument('--weight_decay', default=5e-4, type=float)
     parser.add_argument('--gamma', default=0.99, type=float)
     parser.add_argument('--patience', default=5, type=int)
@@ -116,7 +116,7 @@ def parse_args():
     parser.add_argument('--whole_ranking', action='store_true')
     
     # model parameter
-    # parser.add_argument('--num_layers', default=1, type=int)
+    parser.add_argument('--num_layers', default=1, type=int)
     parser.add_argument('--num_heads', default=4, type=int)
     parser.add_argument('--num_inds', default=4, type=int)
     parser.add_argument('--embedder', default='hnhn', type=str)
@@ -126,7 +126,7 @@ def parse_args():
     parser.add_argument('--agg_type_v', default='', type=str, help="PrevQ, pure, pure2, AvgAgg")
     parser.add_argument('--att_type_e', default='', type=str, help="RankQ, RankAdd, pure, NoAtt")
     parser.add_argument('--agg_type_e', default='', type=str, help="PrevQ, pure, pure2, AvgAgg")
-    # parser.add_argument('--num_att_layer', default=1, type=int, help="Set the number of Self-Attention layers")
+    parser.add_argument('--num_att_layer', default=1, type=int, help="Set the number of Self-Attention layers")
 
 #     parser.add_argument('--encode_type', default='', type=str)
 #     parser.add_argument('--decode_type', default='', type=str)
