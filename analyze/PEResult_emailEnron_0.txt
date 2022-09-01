@@ -1,0 +1,2 @@
+Model,AttV,AggV,AttE,AggE,atnl,pe,f1_micro,f1_macro,searchspace,epoch
+transformer,RankAdd,PrevQ,RankAdd,PrevQ,1,-,0.8196749439151715,0.7622133470792942,1,65

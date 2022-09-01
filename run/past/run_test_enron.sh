@@ -1,0 +1,15 @@
+CUDA_VISIBLE_DEVICES=0 python train_wdgl_w.py --dataset_name DBLP2 --exist_hedgename --k 0 --embedder transformer --encode_type RankQ --decode_type PrevQ --num_layers 2 --scorer sm --scorer_num_layers 1 --vrank_input degree_nodecentrality --optimizer adam --bs 128 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.0001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling -1 --evaltype test --fix_seed --seed 0 --use_gpu
+CUDA_VISIBLE_DEVICES=0 python train_wdgl_w.py --dataset_name DBLP2 --exist_hedgename --k 0 --embedder transformer --encode_type RankQ --decode_type PrevQ --num_layers 2 --scorer sm --scorer_num_layers 1 --vrank_input eigenvec_nodecentrality --optimizer adam --bs 64 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.0001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling -1 --evaltype test --fix_seed --seed ${seed} --use_gpu
+CUDA_VISIBLE_DEVICES=${cuda} python train_wdgl_w.py --dataset_name DBLP2 --exist_hedgename --k 0 --embedder transformer --encode_type RankQ --decode_type PrevQ --num_layers 2 --scorer sm --scorer_num_layers 1 --vrank_input kcore_nodecentrality --optimizer adam --bs 128 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.0001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling -1 --evaltype test --fix_seed --seed ${seed} --use_gpu
+CUDA_VISIBLE_DEVICES=${cuda} python train_wdgl_w.py --dataset_name DBLP2 --exist_hedgename --k 0 --embedder transformer --encode_type RankQ --decode_type PrevQ --num_layers 2 --scorer sm --scorer_num_layers 1 --vrank_input pagerank_nodecentrality --optimizer adam --bs 64 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling -1 --evaltype test --fix_seed --seed ${seed} --use_gpu
+
+# cd ..
+# cuda=2
+# seedlist=("0" "10" "100")
+# for seed in ${seedlist[@]}
+# do
+#     CUDA_VISIBLE_DEVICES=${cuda} python train_wdgl_w.py --dataset_name emailEnron --k 0 --embedder hat --num_layers 1 --scorer sm --scorer_num_layers 1 --optimizer adam --bs 128 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling 100 --evaltype test --fix_seed --seed ${seed} --use_gpu
+#     CUDA_VISIBLE_DEVICES=${cuda} python train_wdgl_w.py --dataset_name emailEnron --k 0 --embedder unigcnii --num_layers 1 --scorer sm --scorer_num_layers 1 --optimizer adam --bs 128 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling 100 --evaltype test --fix_seed --seed ${seed} --use_gpu
+# done
+
+# CUDA_VISIBLE_DEVICES=0 python train_wdgl_w.py --dataset_name emailEnron --embedder unigcnii --num_layers 2 --scorer sm --scorer_num_layers 1 --optimizer "adam" --k 0 --bs 256 --dropout 0.7 --gamma 0.99 --dim_hidden 64 --lr 0.001 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --sampling 40
