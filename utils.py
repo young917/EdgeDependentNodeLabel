@@ -168,7 +168,7 @@ def parse_args():
 
     args.num_layers = int(os.environ.get('num_layers', args.num_layers))
     args.num_att_layer = int(os.environ.get('num_att_layer', args.num_att_layer))
-    args.bs = str(os.environ.get('bs', args.bs))
+    args.bs = int(os.environ.get('bs', args.bs))
     args.lr = float(os.environ.get('lr', args.lr))
 
     args.fname = make_fname(args)
