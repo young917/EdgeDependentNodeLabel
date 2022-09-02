@@ -1,6 +1,7 @@
 import torch 
 import numpy as np
 import random
+import os
 from collections import defaultdict
 
 from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score, confusion_matrix
@@ -165,10 +166,10 @@ def parse_args():
 
     args = parser.parse_args()
 
-    args.num_layers = int(os.environ.get('num_layers', 1))
-    args.num_att_layer = int(os.environ.get('num_att_layer', 1))
-    args.bs = str(os.environ.get('bs', 64))
-    args.lr = float(os.environ.get('lr', 0.001))
+    args.num_layers = int(os.environ.get('num_layers', args.num_layers))
+    args.num_att_layer = int(os.environ.get('num_att_layer', args.num_att_layer))
+    args.bs = str(os.environ.get('bs', args.bs))
+    args.lr = float(os.environ.get('lr', args.lr))
 
     args.fname = make_fname(args)
     
