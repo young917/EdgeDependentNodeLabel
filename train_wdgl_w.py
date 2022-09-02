@@ -430,7 +430,7 @@ args.input_edim = data.e_feat.size(1)
 args.input_vdim = 48
 if args.rankflag:
     args.input_vdim = 44
-savefname = "../input/%s_%d_wv_%d_%s.npy" % (args.dataset_name, args.k, args.input_vdim, args.walk)
+savefname = args.inputdir + "%s_%d_wv_%d_%s.npy" % (args.dataset_name, args.k, args.input_vdim, args.walk)
 node_list = np.arange(data.numnodes).astype('int')
 if os.path.isfile(savefname) is False:
     walk_path = random_walk_hyper(args, node_list, data.hedge2node)
