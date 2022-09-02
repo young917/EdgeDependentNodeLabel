@@ -264,11 +264,11 @@ args = utils.parse_args()
 
 if args.evaltype == "test":
     assert args.fix_seed
-    outputdir = "output/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
+    outputdir = "/output/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputParamResFname = outputdir + args.model_name + "/param_result.txt"
     outputdir += args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
 else:
-    outputdir = "output/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
+    outputdir = "/output/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputdir += args.model_name + "/" + args.param_name +"/"
 if os.path.isdir(outputdir) is False:
     os.makedirs(outputdir)
