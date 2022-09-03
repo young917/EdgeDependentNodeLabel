@@ -219,8 +219,8 @@ class Hypergraph:
         for hidx, hedges in enumerate(self.hedge2node):
             for vidx in hedges:
                 # Isn't it right?
-                e_reg_weight2v_sum[vidx].append(e_reg_wt)
-                v_reg_weight2e_sum[hidx].append(v_reg_wt)   
+                e_reg_weight2v_sum[vidx].append(e_reg_weight[hidx])
+                v_reg_weight2e_sum[hidx].append(v_reg_weight[vidx])   
         v_reg_sum = torch.zeros(self.numnodes) # <- e_reg_weight2v_sum
         e_reg_sum = torch.zeros(self.numhedges) # <- v_reg_weight2e_sum
         for vidx, wt_l in e_reg_weight2v_sum.items():

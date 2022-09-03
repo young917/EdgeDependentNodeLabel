@@ -109,8 +109,8 @@ def parse_args():
     parser.add_argument('--use_eweight_input', default='', type=str)
     parser.add_argument('--exp_num', default=1, type=int)
     parser.add_argument('--exp_wt', action='store_true')
-    parser.add_argument('--alpha_e', default=0, type=float)
-    parser.add_argument('--alpha_v', default=0, type=float)
+    parser.add_argument('--alpha_e', default=-1.5, type=float) #alpha
+    parser.add_argument('--alpha_v', default=-0.5, type=float) #beta
     #     pe
     parser.add_argument('--pe', default='', type=str, help="positional encoding option for ITRE, ShawRE, RafRE, DEAdd; KD, KPRW, DESPD, DERW")
     parser.add_argument('--vrank_input', default='', type=str, help="positional encoding input for RankQ or RankAdd")
