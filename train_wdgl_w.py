@@ -21,7 +21,6 @@ import multiprocessing
 from concurrent.futures import as_completed
 from concurrent.futures import ProcessPoolExecutor
 from scipy.sparse import csr_matrix, lil_matrix, csc_matrix
-import vessl
 
 from preprocess.data_load import gen_DGLGraph, gen_weighted_DGLGraph, gen_sampleweighted_DGLGraph
 from preprocess.data_load import CustomMultiLayerNeighborSampler
@@ -38,8 +37,6 @@ from model.UniGCN import UniGCNII
 from model.Transformer import Transformer, TransformerLayer
 from model.layer import FC, ScorerTransformer, InnerProduct, Wrap_Embedding
 from model.RNN import ScorerGRU
-
-vessl.init()
 
 def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, scheduler, loss_fn, opt="train"):
     total_pred = []
@@ -577,12 +574,6 @@ for epoch in tqdm(range(epoch_start, args.epochs + 1), desc='Epoch'): # tqdm
     print("%d epoch: Training loss : %.4f (%.4f, %.4f) / Training acc : %.4f\n" % (epoch, train_loss, train_ce_loss, train_recon_loss, train_acc))
     with open(outputdir + "log_train.txt", "+a") as f:
         f.write("%d epoch: Training loss : %.4f (%.4f, %.4f) / Training acc : %.4f\n" % (epoch, train_loss, train_ce_loss, train_recon_loss, train_acc))
-    
-    vessl.log(
-        step = epoch,
-        payload={'train_loss': train_loss, 'train_acc':train_acc}
-    )
-
         
     # Test ===========================================================================================================================================================================
     if epoch % test_epoch == 0:
@@ -613,13 +604,7 @@ for epoch in tqdm(range(epoch_start, args.epochs + 1), desc='Epoch'): # tqdm
                         f.write("\t")
         with open(outputdir + "log_valid_macro.txt", "+a") as f:               
             f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, eval_loss, eval_ce_loss, eval_recon_loss, accuracy,precision,recall,macrof1))
-
-        
-        vessl.log(
-            step = epoch,
-            payload={'valid_f1_micro': microf1, 'valid_f1_macro': macrof1, 'avg_f1': (microf1 + macrof1) / 2}
-        )
-
+            
         if best_eval_acc < eval_acc:
             print(best_eval_acc)
             best_eval_acc = eval_acc
