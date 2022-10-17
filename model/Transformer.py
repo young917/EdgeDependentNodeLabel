@@ -30,11 +30,6 @@ class MAB(nn.Module):
             self.vp = nn.Parameter(torch.Tensor(1, dim_V // self.num_heads))
             torch.nn.init.xavier_uniform_(self.kp)
             torch.nn.init.xavier_uniform_(self.vp)
-            
-#         elif self.RE == "RafRE":
-#             self.s = nn.Parameter(torch.empty(1,1))
-#             torch.nn.init.xavier_uniform_(self.s)
-        #self.fc_o = nn.Linear(dim_V, dim_V)
         
     def forward(self, Q, K, Kpos=None):
         Q = self.fc_q(Q)
@@ -45,10 +40,12 @@ class MAB(nn.Module):
         K_ = torch.cat(K.split(dim_split, 2), 0)
         V_ = torch.cat(V.split(dim_split, 2), 0)
         if Kpos is not None:
+            assert Q.shape[1] == Kpos.shape[1]
+            assert K.shape[1] == Kpos.shape[2]
             Kpos_ = torch.cat([Kpos for _ in range(self.num_heads)], 0)
-        
         if self.RE == "ITRE":
-            A = torch.softmax( (torch.matmul(Q_, torch.transpose(K_, 1, 2)) / math.sqrt(self.dim_V)) + torch.log(Kpos_), 2)
+            # print(torch.log(Kpos_))
+            A = torch.softmax( (torch.matmul(Q_, torch.transpose(K_, 1, 2)) / math.sqrt(self.dim_V)) + torch.log(Kpos_ + 1e-12), 2)
             O = torch.cat((Q_ + torch.matmul(A, V_)).split(Q.size(0), 0), 2)
         elif self.RE == "ShawRE":
             dim0, dim1 = Q_.shape[0], Q_.shape[1]
@@ -60,12 +57,9 @@ class MAB(nn.Module):
             VE = VE.view(dim0, dim1, -1)
             V = torch.matmul(A, V_) + VE
             O = torch.cat((Q_ + V).split(Q.size(0), 0), 2)            
-        #elif self.RE == "RafRE":
-        #    A = torch.softmax( (torch.matmul(Q_, torch.transpose(K_, 1, 2)) / math.sqrt(self.dim_V), 2) + self.s * Kpos )
         else:
             A = torch.softmax(torch.matmul(Q_, torch.transpose(K_, 1, 2)) / math.sqrt(self.dim_V), 2)
             O = torch.cat((Q_ + torch.matmul(A, V_)).split(Q.size(0), 0), 2)
-        # O = torch.cat((Q_ + torch.matmul(A, K_)).split(Q.size(0), 0), 2)
         O = O if getattr(self, 'ln0', None) is None else self.ln0(O)
         resO = O
         for i, lin in enumerate(self.fc_o[:-1]):
@@ -75,11 +69,12 @@ class MAB(nn.Module):
         return O
 
 class SAB(nn.Module):
-    def __init__(self, dim_in, dim_out, num_heads, ln=False):
+    # use for ablation study of positional encodings
+    def __init__(self, dim_in, dim_out, num_heads, ln=False, RE="None"):
         super(SAB, self).__init__()
-        self.mab = MAB(dim_in, dim_in, dim_out, num_heads, ln=ln)
-    def forward(self, X):
-        out = self.mab(X, X)
+        self.mab = MAB(dim_in, dim_in, dim_out, num_heads, ln=ln, RE=RE)
+    def forward(self, X, Xpos=None):
+        out = self.mab(X, X, Xpos)
         return out
     
 class IMAB(nn.Module):
@@ -99,7 +94,7 @@ class IMAB(nn.Module):
         return self.mab1(Q, H)
 
 class ISAB(nn.Module):
-    def __init__(self, dim_in, dim_out, num_heads, num_inds, ln=False, RE="None", pos_dim=0):
+    def __init__(self, dim_in, dim_out, num_heads, num_inds, ln=False):
         super(ISAB, self).__init__()
         self.RE = RE
         # X is dim_in, I is (num_inds) * (dim_out)
@@ -107,19 +102,12 @@ class ISAB(nn.Module):
         # After mab1, X is represented by H => X' = (X.size[1]) * (dim_in)
         self.I = nn.Parameter(torch.Tensor(1, num_inds, dim_out))
         nn.init.xavier_uniform_(self.I)
-        if pos_dim > 0:
-            self.relation_I = nn.Parameter(torch.Tensor(pos_dim, num_inds))
-            nn.init.xavier_uniform_(self.relation_I)
-        self.mab0 = MAB(dim_out, dim_in, dim_out, num_heads, ln=ln, RE=RE)
-        self.mab1 = MAB(dim_in, dim_out, dim_out, num_heads, ln=ln, RE=RE)
+        self.mab0 = MAB(dim_out, dim_in, dim_out, num_heads, ln=ln)
+        self.mab1 = MAB(dim_in, dim_out, dim_out, num_heads, ln=ln)
 
-    def forward(self, X, Xpos=None):
-        if Xpos is not None:
-            Xpos = torch.matmul(Xpos,self.relation_I)
-            H = self.mab0(self.I.repeat(X.size(0), 1, 1), X, torch.transpose(Xpos,1,2))
-        else:
-            H = self.mab0(self.I.repeat(X.size(0), 1, 1), X, Xpos)
-        return self.mab1(X, H, Xpos)
+    def forward(self, X):
+        H = self.mab0(self.I.repeat(X.size(0), 1, 1), X)
+        return self.mab1(X, H)
 
 class PMA(nn.Module):
     def __init__(self, dim_in, dim_out, num_heads, num_seeds, ln=False, numlayers=1):
@@ -140,10 +128,9 @@ class TransformerLayer(nn.Module):
                  output_vdim, 
                  output_edim,
                  weight_dim,
-                 pos_dim = 0,
-                 att_type_v = "RankAdd",
+                 att_type_v = "OrderPE",
                  agg_type_v = "PrevQ",
-                 att_type_e = "RankAdd",
+                 att_type_e = "OrderPE",
                  agg_type_e = "PrevQ",
                  num_att_layer = 2,
                  dim_hidden = 128,
@@ -151,7 +138,9 @@ class TransformerLayer(nn.Module):
                  num_inds=4,
                  dropout=0.6,
                  ln=False,
-                 activation=F.relu):
+                 activation=F.relu,
+                 weight_flag=False,
+                 pe_ablation_flag=False):
         super(TransformerLayer, self).__init__()
         
         self.num_heads = num_heads
@@ -162,7 +151,6 @@ class TransformerLayer(nn.Module):
         self.output_vdim = output_vdim
         self.output_edim = output_edim
         self.weight_dim = weight_dim
-        self.pos_dim = pos_dim
         self.att_type_v = att_type_v
         self.agg_type_v = agg_type_v
         self.att_type_e = att_type_e
@@ -171,29 +159,30 @@ class TransformerLayer(nn.Module):
         self.activation = activation
         self.dropout = dropout
         self.lnflag = ln
+        self.weight_flag = weight_flag
+        self.pe_ablation_flag = pe_ablation_flag
         
-        if self.att_type_v == "RankAdd":
+        if self.att_type_v == "OrderPE":
             self.pe_v = nn.Linear(weight_dim, input_vdim)
-        if self.att_type_e == "RankAdd":
+        if self.att_type_e == "OrderPE":
             self.pe_e = nn.Linear(weight_dim, output_edim)
         self.dropout = nn.Dropout(dropout)
             
         # For Node -> Hyperedge
-        #     encoding part: create new node representation specialized in hyperedge
+        #     Attention part: create edge-dependent embedding
         dimension = input_vdim
         self.enc_v = nn.ModuleList()
         for _ in range(self.num_att_layer):
-            if self.att_type_v == "RankQ":
-                self.enc_v.append(IMAB(weight_dim, dimension, dim_hidden, num_heads, num_inds, ln=ln))
-                self.enc_v.append(ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln))
-                dimension = dim_hidden
-            elif self.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
-                self.enc_v.append(ISAB(dimension, dim_hidden, num_heads, num_inds, ln=ln, RE=self.att_type_v, pos_dim=self.pos_dim))
+            if self.att_type_v in ["ITRE", "ShawRE"]:
+                self.enc_v.append(SAB(dimension, dim_hidden, num_heads, ln=ln, RE=self.att_type_v))
                 dimension = dim_hidden
             elif self.att_type_v != "NoAtt":
-                self.enc_v.append(ISAB(dimension, dim_hidden, num_heads, num_inds, ln=ln))
+                if self.pe_ablation_flag:
+                    self.enc_v.append(SAB(dimension, dim_hidden, num_heads, ln=ln))
+                else:
+                    self.enc_v.append(ISAB(dimension, dim_hidden, num_heads, num_inds, ln=ln))
                 dimension = dim_hidden
-        #     decoding part: aggregate embeddings
+        #     Aggregate part
         self.dec_v = nn.ModuleList()
         if self.agg_type_v == "PrevQ":
             self.dec_v.append(MAB(input_edim, dimension, dim_hidden, num_heads, ln=ln))
@@ -201,22 +190,18 @@ class TransformerLayer(nn.Module):
             self.dec_v.append(PMA(dimension,  dim_hidden, num_heads, 1, ln=ln, numlayers=1))
         elif self.agg_type_v == "pure2":
             self.dec_v.append(PMA(dimension,  dim_hidden, num_heads, 1, ln=ln, numlayers=2))
-        # else: "AvgAgg"
         self.dec_v.append(nn.Dropout(dropout))
         self.dec_v.append(nn.Linear(dim_hidden, output_edim))
         
         # For Hyperedge -> Node
+        #     Attention part: create node-dependent embedding
         dimension = output_edim
         self.enc_e = nn.ModuleList()
         for _ in range(self.num_att_layer):
-            if self.att_type_e == "RankQ":
-                self.enc_e.append(IMAB(weight_dim, dimension, dim_hidden, num_heads, num_inds, ln=ln))
-                self.enc_e.append(ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln))
-                dimension = dim_hidden
-            elif self.att_type_e != "NoAtt":
+            if self.att_type_e != "NoAtt":
                 self.enc_e.append(ISAB(dimension, dim_hidden, num_heads, num_inds, ln=ln))   
                 dimension = dim_hidden
-        #     decoding part: aggregate embeddings
+        #     Aggregate part
         self.dec_e = nn.ModuleList()
         if self.agg_type_e == "PrevQ":
             self.dec_e.append(MAB(input_vdim, dimension, dim_hidden, num_heads, ln=ln))
@@ -228,15 +213,13 @@ class TransformerLayer(nn.Module):
         self.dec_e.append(nn.Linear(dim_hidden, output_vdim))
         
     def v_message_func(self, edges):
-        if self.weight_dim > 0: # weight represents ranking information
-            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight']}
-        elif "RE" in self.att_type_v:
-            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'p': edges.src['pos']}
+        if self.weight_flag: # weight represents ranking information
+            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'vindex': edges.src['index'], 'weight': edges.data['weight']}
         else:
-            return {'q': edges.dst['feat'], 'v': edges.src['feat']}
+            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'vindex': edges.src['index']}
         
     def e_message_func(self, edges):
-        if self.weight_dim > 0: # weight represents ranking information
+        if self.weight_flag: # weight represents ranking information
             return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight']}
         else:
             return {'q': edges.dst['feat'], 'v': edges.src['feat']}
@@ -245,31 +228,34 @@ class TransformerLayer(nn.Module):
         # nodes.mailbox['v' or 'q'].shape = (num batch, hyperedge size, feature dim)
         Q = nodes.mailbox['q'][:,0:1,:] # <- Because nodes.mailbox['q'][i,j] == nodes.mailbox['q'][i,j+1] 
         v = nodes.mailbox['v']
-        if self.weight_dim > 0:
-            P = None
+        Vindex = nodes.mailbox['vindex']
+        if self.weight_flag:
             W = nodes.mailbox['weight']
-        elif "RE" in self.att_type_v :
-            P = nodes.mailbox['p']
-            W = None
-        else:
-            P = None
-            W = None
+        
+        if "RE" in self.att_type_v:
+            # 1. reduce last dimension
+            # 2. sort column
+            hedgesize = W.shape[1]
+            batchsize = W.shape[0]
+            W = W[:,:,:hedgesize]
+            assert torch.sum(torch.flatten(W[:,:,hedgesize:])) == 0
+            
+            argsort_idx = torch.argsort(Vindex,1)
+            argsort_idx = torch.flatten(argsort_idx, 1)
+            for batch_idx in range(batchsize):
+                W[batch_idx,:,:] = W[batch_idx,:,argsort_idx[batch_idx]]
             
         # Encode
-        if self.att_type_v == "RankAdd":
+        if self.att_type_v == "OrderPE":
             v = v + self.pe_v(W)
         for i, layer in enumerate(self.enc_v):
-            if i % 2 == 0 and self.att_type_v == "RankQ":
-                v = layer(W, v)
-            elif "RE" in self.att_type_v:
-                v = layer(v, P)
+            if "RE" in self.att_type_v:
+                v = layer(v, W)
             else:
                 v = layer(v)
         v = self.dropout(v)
         # Decode
         o = v
-        if self.agg_type_v == "AvgAgg":
-            o = torch.mean(o, dim=1, keepdim=True)
         for i, layer in enumerate(self.dec_v):
             if i == 0 and self.agg_type_v == "PrevQ":
                 o = layer(Q, o)
@@ -280,25 +266,20 @@ class TransformerLayer(nn.Module):
     def e_reduce_func(self, nodes):
         Q = nodes.mailbox['q'][:,0:1,:]
         v = nodes.mailbox['v']
-        if self.weight_dim > 0:
+        if self.weight_flag:
             W = nodes.mailbox['weight']
         else:
             W = None
 
         # Encode
-        if self.att_type_e == "RankAdd":
+        if self.att_type_e == "OrderPE":
             v = v + self.pe_e(W)
         for i, layer in enumerate(self.enc_e):
-            if i % 2 == 0 and self.att_type_e == "RankQ":
-                v = layer(W, v)
-            else:
-                v = layer(v)
+            v = layer(v)
         v = self.dropout(v)
         
         # Decode
         o = v
-        if self.agg_type_e == "AvgAgg":
-            o = torch.mean(o, dim=1, keepdim=True)
         for i, layer in enumerate(self.dec_e):
             if i == 0 and self.agg_type_e == "PrevQ":
                 o = layer(Q, o)
@@ -307,11 +288,10 @@ class TransformerLayer(nn.Module):
                 
         return {'o': o}
     
-    def forward(self, g1, g2, vfeat, efeat, vpos=None):
+    def forward(self, g1, g2, vfeat, efeat, vindex):
         with g1.local_scope():
             g1.srcnodes['node'].data['feat'] = vfeat
-            if vpos is not None:
-                g1.srcnodes['node'].data['pos'] = vpos[:g1['in'].num_src_nodes()]
+            g1.srcnodes['node'].data['index'] = vindex[:g1['in'].num_src_nodes()]
             g1.dstnodes['edge'].data['feat'] = efeat[:g1['in'].num_dst_nodes()]
             g1.update_all(self.v_message_func, self.v_reduce_func, etype='in')
             efeat = g1.dstnodes['edge'].data['o']
@@ -336,45 +316,46 @@ class Transformer(nn.Module):
                  vertex_dim,
                  edge_dim,
                  weight_dim=0,
-                 pos_dim=0,
                  num_layers=2,
                  num_heads=4,
                  num_inds=4,
-                 att_type_v = "RankAdd",
+                 att_type_v = "OrderPE",
                  agg_type_v = "PrevQ",
-                 att_type_e = "RankAdd",
+                 att_type_e = "OrderPE",
                  agg_type_e = "PrevQ",
                  num_att_layer = 2,
                  layernorm = False,
                  dropout=0.6,
-                 activation=F.relu):
+                 activation=F.relu,
+                 weight_flag=False,
+                 pe_ablation_flag=False):
         super(Transformer, self).__init__()
         self.num_layers = num_layers
         self.activation = activation
         
         self.layers = nn.ModuleList()               
         if num_layers == 1:
-             self.layers.append(model(input_vdim, input_edim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds, pos_dim=pos_dim,
+             self.layers.append(model(input_vdim, input_edim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                       att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
-                                      dropout=dropout, ln=layernorm, activation=None))
+                                      dropout=dropout, ln=layernorm, activation=None, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
         else:
             for i in range(num_layers):
                 if i == 0:
-                    self.layers.append(model(input_vdim, input_edim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds, pos_dim=pos_dim,
+                    self.layers.append(model(input_vdim, input_edim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                              att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
-                                             dropout=dropout, ln=layernorm, activation=self.activation))
+                                             dropout=dropout, ln=layernorm, activation=self.activation, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
                 elif i == (num_layers - 1):
-                    self.layers.append(model(hidden_dim, hidden_dim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds, pos_dim=pos_dim,
+                    self.layers.append(model(hidden_dim, hidden_dim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                              att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
-                                             dropout=dropout, ln=layernorm, activation=None))
+                                             dropout=dropout, ln=layernorm, activation=None, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
                 else:
-                    self.layers.append(model(hidden_dim, hidden_dim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds, pos_dim=pos_dim,
+                    self.layers.append(model(hidden_dim, hidden_dim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                              att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
-                                             dropout=dropout, ln=layernorm, activation=self.activation))
+                                             dropout=dropout, ln=layernorm, activation=self.activation, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
     
-    def forward(self, blocks, vfeat, efeat, vpos=None):
+    def forward(self, blocks, vfeat, efeat, vindex):
         for l in range(self.num_layers):
-            vfeat, efeat = self.layers[l](blocks[2*l], blocks[2*l+1], vfeat, efeat, vpos)
+            vfeat, efeat = self.layers[l](blocks[2*l], blocks[2*l+1], vfeat, efeat, vindex)
             
         return vfeat, efeat
     

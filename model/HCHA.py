@@ -30,6 +30,7 @@ class HCHALayer(nn.Module):
         self.activation = activation
         
         self.p = nn.Linear(input_vdim, output_vdim * num_heads, bias=False)
+        self.lin_v = nn.Linear(input_vdim, num_heads * output_vdim, bias=False)
         self.attn_v = nn.Parameter(torch.FloatTensor(size=(1, num_heads, output_vdim)))
         self.attn_e = nn.Parameter(torch.FloatTensor(size=(1, num_heads, output_vdim)))
         
@@ -37,8 +38,8 @@ class HCHALayer(nn.Module):
         """Reinitialize learnable parameters."""
         gain = nn.init.calculate_gain('relu')
         nn.init.xavier_normal_(self.p.weight, gain=gain)
-        nn.init.xavier_normal_(self.attn_v.weight, gain=gain)
-        nn.init.xavier_normal_(self.attn_e.weight, gain=gain)
+        nn.init.xavier_normal_(self.attn_v, gain=gain)
+        nn.init.xavier_normal_(self.attn_e, gain=gain)
         
     def attention(self, edges):
         e = edges.src['e'] + edges.dst['e']        
@@ -62,23 +63,23 @@ class HCHALayer(nn.Module):
             g['con'].edata['a'] = edata
             g['in'].edata['a'] = edata
             
-            g['in'].srcdata.update({'ft': vfeat_p * DV2})
+            input_ft = self.lin_v(vfeat) * DV2.view(-1,1)
+            g['in'].srcdata.update({'ft': input_ft.view(-1, self._num_heads, self._output_vdim)})
             g.update_all(fn.u_mul_e('ft', 'a', 'm'),
                         fn.sum('m', 'ft'), etype='in')
             efeat = g['in'].dstdata['ft']
             efeat = efeat.mean(1)
-            efeat = efeat * invDE
             
-            g['con'].srcdata.update({'ft': efeat})
+            zefeat = efeat * invDE.view(-1,1)
+            g['con'].srcdata.update({'ft': zefeat})
             g.update_all(fn.u_mul_e('ft', 'a', 'm'),
                         fn.sum('m', 'ft'), etype='con')
             vfeat = g['con'].dstdata['ft']
             vfeat = vfeat.mean(1)
-            vfeat = vfeat * DV2
+            vfeat = vfeat * DV2.view(-1,1)
             
             if self.activation:
                 vfeat = self.activation(vfeat)
-            vfeat = vfeat.mean(1)
             
         return [vfeat, efeat]
 
