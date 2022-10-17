@@ -24,7 +24,7 @@ from scipy.sparse import csr_matrix, lil_matrix, csc_matrix
 
 from preprocess.data_load import gen_DGLGraph, gen_weighted_DGLGraph
 import preprocess.data_load as dl
-from preprocess.batch import DataLoader, DataLoaderwRank
+from preprocess.batch import DataLoader
 from initialize.initial_embedder import MultipleEmbedding
 from initialize.random_walk_hyper import random_walk_hyper
 
@@ -35,7 +35,7 @@ from model.UniGCN import UniGCNII
 from model.Transformer import Transformer, TransformerLayer
 from model.TransformerHAT import TransformerHAT, TransformerHATLayer
 from model.TransformerHNHN import TransformerHNHN, TransformerHNHNLayer
-from model.layer import FC
+from model.layer import FC, Wrap_Embedding
 
 def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, scheduler, loss_fn, opt="train"):
     total_pred = []
@@ -365,7 +365,7 @@ elif args.embedder == "hat":
     if args.encode_type == "":
         embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
     else:
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.rank_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
+        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.order_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
 elif args.embedder == "transformer":    
@@ -373,19 +373,19 @@ elif args.embedder == "transformer":
     pos_dim = 0
     pe_ablation_flag = args.pe_ablation
     embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.rank_dim, num_heads=args.num_heads, num_layers=args.num_layers, pos_dim=pos_dim,
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, pos_dim=pos_dim,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
                            num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
 elif args.embedder == "transformerHAT":
     input_vdim = args.input_vdim
     embedder = TransformerHAT(TransformerHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.rank_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
 elif args.embedder == "transformerHNHN":
     input_vdim = args.input_vdim
     embedder = TransformerHNHN(TransformerHNHNLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.rank_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
 

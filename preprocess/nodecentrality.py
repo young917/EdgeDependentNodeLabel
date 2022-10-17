@@ -1,18 +1,15 @@
 from collections import defaultdict
-# from hypergraph import *
 import argparse
 import numpy as np
 from scipy import sparse as sp
 import networkx as nx
 import os
-from scipy import sparse # sparse.coo_matrix, sparse.linalg.eigs
-# import cpnet
+from scipy import sparse
 
 class HyperGraph:
-    def __init__(self, dataname, k, sample_type, exist_hedgename, repeat_idx):
+    def __init__(self, dataname, k, sample_type, exist_hedgename):
         self.dataname = dataname
         self.k = k
-        self.repeat_idx = repeat_idx
         self.hedge2node = []
         self.node2hedge = []
         self.node_reindexing = {}
@@ -24,10 +21,7 @@ class HyperGraph:
         if k > 0 :
             sampled_hset = []
             if sample_type == "rw":
-                if repeat_idx > 0:
-                    inputname = "../dataset/{}/sampled_hset_{}_{}.txt".format(self.dataname, self.k, self.repeat_idx) 
-                else:
-                    inputname = "../dataset/{}/sampled_hset_{}.txt".format(self.dataname, self.k)
+                inputname = "../dataset/{}/sampled_hset_{}.txt".format(self.dataname, self.k)
                 with open(inputname, "r") as f:
                     for line in f.readlines():
                         line = line.rstrip()
@@ -73,7 +67,6 @@ class HyperGraph:
         values = []
         rows = []
         cols = []
-        # self.weighted_clique = [[] for _ in range(self.numnodes)]
 
         for v in range(self.numnodes):
             for h in self.node2hedge[v]:
@@ -85,8 +78,6 @@ class HyperGraph:
         for k, ch in tmp_dict.items():
             v, nv = k.split(",")
             v, nv = int(v), int(nv)
-            # self.weighted_clique[v].append((nv, ch))
-            # self.weighted_clique[nv].append((v, ch))
             values.append(ch)
             rows.append(v)
             cols.append(nv)
@@ -179,50 +170,37 @@ def cal_pagerank(graph):
 
     return nx.algorithms.link_analysis.pagerank_alg.pagerank(nx_graph)
 
-# def cal_coreness(graph):
-#     # algorithm = cpnet.KM_config()
-#     # algorithm = cpnet.MINRES()
-#     algorithm = cpnet.Rombach() # continuous spectrum & consider weighted edge
-#     graph.construct_weighted_clique()
-#     nx_graph = nx.convert_matrix.from_scipy_sparse_matrix(graph.weighted_matrix)
-#     algorithm.detect(nx_graph)
-#     return algorithm.get_coreness()
-
 def cal_eigenvector(graph):
     graph.construct_weighted_clique()
     nx_graph = nx.convert_matrix.from_scipy_sparse_matrix(graph.weighted_matrix)
 
     return nx.eigenvector_centrality(nx_graph)
 
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--algo', required=False, default="degree")
     parser.add_argument('--dataname', required=False, default="DBLP2")
-    parser.add_argument('--k', required=False, type=int, default=10000)
-    parser.add_argument('--sampletype', required=False, type=str, default="rw")
     parser.add_argument('--exist_hedgename', action='store_true')
-    parser.add_argument('--repeat_idx', default=0, type=int)
+    parser.add_argument('--k', required=False, type=int, default=0, help="size of sampled hypergraph from dataset")
+    parser.add_argument('--sampletype', required=False, type=str, default="rw", help="type of sampled hypergraph from dataset")
     args = parser.parse_args()
 
-    graph = HyperGraph(args.dataname, args.k, args.sampletype, args.exist_hedgename, args.repeat_idx)
+    graph = HyperGraph(args.dataname, args.k, args.sampletype, args.exist_hedgename)
     if args.algo == "degree":
         node_centrality = cal_degree(graph)
     elif args.algo == "kcore":
         node_centrality = cal_kcore(graph)
     elif args.algo == "pagerank":
         node_centrality = cal_pagerank(graph)
-#     elif args.algo == "coreness":
-#         node_centrality = cal_coreness(graph)
     elif args.algo == "eigenvec":
         node_centrality = cal_eigenvector(graph)
 
     outputdir = "../dataset/" + args.dataname + "/"
     if os.path.isdir(outputdir) is False:
         os.makedirs(outputdir)
-    if args.repeat_idx > 0 :
-        outputname = outputdir + "{}_nodecentrality_{}_{}.txt".format(args.algo, args.k, args.repeat_idx)
-    else:
-        outputname = outputdir + "{}_nodecentrality_{}.txt".format(args.algo, args.k)
+    outputname = outputdir + "{}_nodecentrality_{}.txt".format(args.algo, args.k)
     with open(outputname, "w") as f:
         f.write("node\t" + args.algo + "\n")
         for v in node_centrality:
