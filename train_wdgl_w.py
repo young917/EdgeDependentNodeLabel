@@ -88,15 +88,15 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
         elif args.embedder == "transformer":
-            vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
             if args.att_type_v in ["ITRE", "ShawRE"]:
+                vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
                 v, e = embedder(blocks, v_feat, e_feat, vindex)
             else:
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
-                v, e = embedder(blocks, v_feat, e_feat, vindex)
+                v, e = embedder(blocks, v_feat, e_feat)
         else:
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
@@ -137,9 +137,6 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
     total_loss = 0
     total_ce_loss = 0
     total_recon_loss = 0
-    
-    node2acc = defaultdict(list)
-    hedge2acc = defaultdict(list)
     
     # Batch ==============================================================
     ts = time.time()
@@ -186,8 +183,8 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
         elif args.embedder == "transformer":
-            vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
             if args.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
+                vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
                 v, e = embedder(blocks, v_feat, e_feat, vindex)
@@ -208,13 +205,6 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
         total_pred.append(predictions.detach())
         pred_cls = torch.argmax(predictions, dim=1)
         total_label.append(nodelabels.detach())
-        for v, h, vpred, vlab in zip(nodeindices.tolist(), hedgeindices.tolist(), pred_cls.detach().cpu().tolist(), nodelabels.detach().cpu().tolist()):
-            if int(vpred) == int(vlab):
-                acc = 1
-            else:
-                acc = 0
-            node2acc[int(v)].append(acc)
-            hedge2acc[int(h)].append(acc)
         
         num_data += predictions.shape[0]
         num_recon_data += input_nodes['node'].shape[0]
@@ -225,7 +215,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
         total_ce_loss += (ce_loss.item() * predictions.shape[0])
         total_recon_loss += (recon_loss.item() * input_nodes['node'].shape[0]) # This is fixed as zero
         
-    return total_pred, total_label, total_loss / num_data, total_ce_loss / num_data, total_recon_loss / num_recon_data, initembedder, embedder, scorer, node2acc, hedge2acc
+    return total_pred, total_label, total_loss / num_data, total_ce_loss / num_data, total_recon_loss / num_recon_data, initembedder, embedder, scorer
 
 # Make Output Directory --------------------------------------------------------------------------------------------------------------
 initialization = "rw"
@@ -236,7 +226,7 @@ if args.evaltype == "test":
     outputParamResFname = outputdir + args.model_name + "/param_result.txt"
     outputdir += args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
 else:
-    outputdir = "results_v2/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
+    outputdir = "results/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputdir += args.model_name + "/" + args.param_name +"/"
 if os.path.isdir(outputdir) is False:
     os.makedirs(outputdir)
@@ -292,7 +282,7 @@ data.split_data(args.val_ratio, args.test_ratio)
 train_data = data.get_data(0)
 valid_data = data.get_data(1)
 test_data = data.get_data(2)
-ls = [{('node', 'in', 'edge'): args.vsampling, ('edge', 'con', 'node'): args.sampling}] * (args.num_layers * 2 + 1)
+ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): args.sampling}] * (args.num_layers * 2 + 1)
 full_ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)
 if data.weight_flag:
     g = gen_weighted_DGLGraph(args, data.hedge2node, data.hedge2nodePE, data.hedge2nodepos, data.node2hedge, data.node2hedgePE, device)
@@ -532,7 +522,7 @@ if args.evaltype == "test":
     scorer.eval()
 
     with torch.no_grad():
-        total_pred, total_label, test_loss, test_ce_loss, test_recon_loss, initembedder, embedder, scorer, node2acc, hedge2acc = run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, loss_fn)
+        total_pred, total_label, test_loss, test_ce_loss, test_recon_loss, initembedder, embedder, scorer = run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, loss_fn)
     # Calculate Accuracy & Epoch Loss
     total_label = torch.cat(total_label, dim=0)
     total_pred = torch.cat(total_pred)

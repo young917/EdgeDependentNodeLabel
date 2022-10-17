@@ -44,7 +44,6 @@ class MAB(nn.Module):
             assert K.shape[1] == Kpos.shape[2]
             Kpos_ = torch.cat([Kpos for _ in range(self.num_heads)], 0)
         if self.RE == "ITRE":
-            # print(torch.log(Kpos_))
             A = torch.softmax( (torch.matmul(Q_, torch.transpose(K_, 1, 2)) / math.sqrt(self.dim_V)) + torch.log(Kpos_ + 1e-12), 2)
             O = torch.cat((Q_ + torch.matmul(A, V_)).split(Q.size(0), 0), 2)
         elif self.RE == "ShawRE":
@@ -76,27 +75,10 @@ class SAB(nn.Module):
     def forward(self, X, Xpos=None):
         out = self.mab(X, X, Xpos)
         return out
-    
-class IMAB(nn.Module):
-    def __init__(self, dim_Q, dim_K, dim_V, num_heads, num_inds, ln=False):
-        super(IMAB, self).__init__()
-        # X is dim_in, I is (num_inds) * (dim_out)
-        # After mab0, I is represented by X => H = (num_inds) * (dim_out)
-        # After mab1, X is represented by H => X' = (X.size[1]) * (dim_in)
-        self.I = nn.Parameter(torch.Tensor(1, num_inds, dim_V))
-        nn.init.xavier_uniform_(self.I)
-        self.mab0 = MAB(dim_V, dim_K, dim_V, num_heads, ln=ln)
-        self.mab1 = MAB(dim_Q, dim_V, dim_V, num_heads, ln=ln)
-
-    def forward(self, Q, K):
-        # Q, K
-        H = self.mab0(self.I.repeat(K.size(0), 1, 1), K)
-        return self.mab1(Q, H)
 
 class ISAB(nn.Module):
     def __init__(self, dim_in, dim_out, num_heads, num_inds, ln=False):
         super(ISAB, self).__init__()
-        self.RE = RE
         # X is dim_in, I is (num_inds) * (dim_out)
         # After mab0, I is represented by X => H = (num_inds) * (dim_out)
         # After mab1, X is represented by H => X' = (X.size[1]) * (dim_in)
@@ -161,6 +143,9 @@ class TransformerLayer(nn.Module):
         self.lnflag = ln
         self.weight_flag = weight_flag
         self.pe_ablation_flag = pe_ablation_flag
+        self.re_pe_flag = False
+        if "RE" in self.att_type_v: # relative positional encoding
+            self.re_pe_flag = True
         
         if self.att_type_v == "OrderPE":
             self.pe_v = nn.Linear(weight_dim, input_vdim)
@@ -213,28 +198,30 @@ class TransformerLayer(nn.Module):
         self.dec_e.append(nn.Linear(dim_hidden, output_vdim))
         
     def v_message_func(self, edges):
-        if self.weight_flag: # weight represents ranking information
+        if self.re_pe_flag:
             return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'vindex': edges.src['index'], 'weight': edges.data['weight']}
+        elif self.weight_flag: # weight represents positional information
+            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight']}
         else:
-            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'vindex': edges.src['index']}
+            return {'q': edges.dst['feat'], 'v': edges.src['feat']}
         
-    def e_message_func(self, edges):
-        if self.weight_flag: # weight represents ranking information
+    def e_message_func(self, edges):    
+        if self.weight_flag: # weight represents positional information
             return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight']}
         else:
             return {'q': edges.dst['feat'], 'v': edges.src['feat']}
 
     def v_reduce_func(self, nodes):
         # nodes.mailbox['v' or 'q'].shape = (num batch, hyperedge size, feature dim)
-        Q = nodes.mailbox['q'][:,0:1,:] # <- Because nodes.mailbox['q'][i,j] == nodes.mailbox['q'][i,j+1] 
+        Q = nodes.mailbox['q'][:,0:1,:]
         v = nodes.mailbox['v']
-        Vindex = nodes.mailbox['vindex']
         if self.weight_flag:
             W = nodes.mailbox['weight']
         
-        if "RE" in self.att_type_v:
+        if self.re_pe_flag:
             # 1. reduce last dimension
             # 2. sort column
+            Vindex = nodes.mailbox['vindex']
             hedgesize = W.shape[1]
             batchsize = W.shape[0]
             W = W[:,:,:hedgesize]
@@ -249,7 +236,7 @@ class TransformerLayer(nn.Module):
         if self.att_type_v == "OrderPE":
             v = v + self.pe_v(W)
         for i, layer in enumerate(self.enc_v):
-            if "RE" in self.att_type_v:
+            if self.re_pe_flag:
                 v = layer(v, W)
             else:
                 v = layer(v)
@@ -288,10 +275,12 @@ class TransformerLayer(nn.Module):
                 
         return {'o': o}
     
-    def forward(self, g1, g2, vfeat, efeat, vindex):
+    def forward(self, g1, g2, vfeat, efeat, vindex=None):
         with g1.local_scope():
             g1.srcnodes['node'].data['feat'] = vfeat
-            g1.srcnodes['node'].data['index'] = vindex[:g1['in'].num_src_nodes()]
+            if self.re_pe_flag:
+                assert vindex != None
+                g1.srcnodes['node'].data['index'] = vindex[:g1['in'].num_src_nodes()]
             g1.dstnodes['edge'].data['feat'] = efeat[:g1['in'].num_dst_nodes()]
             g1.update_all(self.v_message_func, self.v_reduce_func, etype='in')
             efeat = g1.dstnodes['edge'].data['o']
@@ -353,7 +342,7 @@ class Transformer(nn.Module):
                                              att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
                                              dropout=dropout, ln=layernorm, activation=self.activation, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
     
-    def forward(self, blocks, vfeat, efeat, vindex):
+    def forward(self, blocks, vfeat, efeat, vindex=None):
         for l in range(self.num_layers):
             vfeat, efeat = self.layers[l](blocks[2*l], blocks[2*l+1], vfeat, efeat, vindex)
             

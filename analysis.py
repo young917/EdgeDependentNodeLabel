@@ -42,10 +42,6 @@ initialization = "rw"
 args = utils.parse_args()
 outputdir = "results_test/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/" + args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/" # temporary!!!!
 savedir = "result/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/" + args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
-if args.data_index >= 0:
-    savedir += str(args.data_index) + "/"
-else:
-    savedir += "0/"
 
 print("OutputDir = " + outputdir)
 print("SaveDir = " + savedir)
@@ -101,10 +97,7 @@ if args.fix_seed:
 
 # Data -----------------------------------------------------------------------------
 data = dl.Hypergraph(args, dataset_name)
-if args.data_index >= 0:
-    data.split_data_by_target(args.data_index)
-else:
-    data.split_data(args.val_ratio, args.test_ratio)
+data.split_data(args.val_ratio, args.test_ratio)
 target_data = data.get_data(2)
 
 ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)

@@ -176,7 +176,7 @@ class Hypergraph:
                         node_reindex = self.node_reindexing[nodeindex]
                         for i, col in enumerate(columns):
                             vfeat[node_reindex] = float(tmp[i])
-                if args.whole_order:
+                if args.whole_order: # in entire nodeset
                     feats = []
                     for vidx in range(self.numnodes):
                         feats.append(vfeat[vidx])
@@ -397,8 +397,8 @@ def gen_DGLGraph(args, hedge2node, hedge2nodepos, node2hedge, device):
         for vorder, v in enumerate(hedge):
             data_dict[('node', 'in', 'edge')].append((v, hidx))
             data_dict[('edge', 'con', 'node')].append((hidx, v))
-            in_edge_label.append(hedge2nodepos[hidx][vorder]) # hedge2nodepos[hidx][vorder]
-            con_edge_label.append(hedge2nodepos[hidx][vorder]) # hedge2nodepos[hidx][vorder]
+            in_edge_label.append(hedge2nodepos[hidx][vorder]) 
+            con_edge_label.append(hedge2nodepos[hidx][vorder]) 
 
     in_edge_label = torch.Tensor(in_edge_label)
     con_edge_label = torch.Tensor(con_edge_label)
@@ -428,7 +428,6 @@ def gen_weighted_DGLGraph(args, hedge2node, hedge2nodePE, hedge2nodepos, node2he
             data_dict[('edge', 'con', 'node')].append((hidx, v))
             # edge feat
             efeat = hedge2nodePE[hidx][vorder]
-            # print(efeat)
             efeat += np.zeros(edgefeat_dim - len(efeat)).tolist()
             in_edge_weights.append(efeat)
             con_edge_weights.append(efeat)

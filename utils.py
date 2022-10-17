@@ -56,8 +56,6 @@ def parse_args():
     parser.add_argument('--q', type=float, default=0.25, help='Inout hyperparameter')
     parser.add_argument('-w', '--walk', type=str, default='hyper', help='The walk type, empty stands for rw on hypergraph')
     #     weight for HNHN
-    parser.add_argument('--use_vweight_input', default='', type=str)
-    parser.add_argument('--use_eweight_input', default='', type=str)
     parser.add_argument('--exp_num', default=1, type=int)
     parser.add_argument('--exp_wt', action='store_true')
     parser.add_argument('--alpha_e', default=0, type=float)
