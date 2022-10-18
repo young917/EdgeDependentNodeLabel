@@ -281,7 +281,8 @@ data = dl.Hypergraph(args, dataset_name)
 data.split_data(args.val_ratio, args.test_ratio)
 train_data = data.get_data(0)
 valid_data = data.get_data(1)
-test_data = data.get_data(2)
+if args.evaltype == "test":
+    test_data = data.get_data(2)
 ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): args.sampling}] * (args.num_layers * 2 + 1)
 full_ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)
 if data.weight_flag:
@@ -298,10 +299,12 @@ if args.use_gpu:
     g = g.to(device)
     train_data = train_data.to(device)
     valid_data = valid_data.to(device)
-    test_data = test_data.to(device)
+    if args.evaltype == "test":
+        test_data = test_data.to(device)
 dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": train_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False) # , num_workers=4
 validdataloader = dgl.dataloading.NodeDataLoader( g, {"edge": valid_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False)
-testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
+if args.evaltype == "test":
+    testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
 
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)
@@ -466,10 +469,10 @@ for epoch in tqdm(range(epoch_start, args.epochs + 1), desc='Epoch'): # tqdm
         eval_acc = torch.eq(pred_cls, total_label).sum().item() / len(total_label)
         y_test = total_label.cpu().numpy()
         pred = pred_cls.cpu().numpy()
-        confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro')
+        confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro', outputdim=args.output_dim)
         with open(outputdir + "log_valid_micro.txt", "+a") as f:
             f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, eval_loss, eval_ce_loss, eval_recon_loss, accuracy,precision,recall,f1))
-        confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro')
+        confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro', outputdim=args.output_dim)
         with open(outputdir + "log_valid_confusion.txt", "+a") as f:
             for r in range(args.output_dim):
                 for c in range(args.output_dim):
@@ -530,10 +533,10 @@ if args.evaltype == "test":
     eval_acc = torch.eq(pred_cls, total_label).sum().item() / len(total_label)
     y_test = total_label.cpu().numpy()
     pred = pred_cls.cpu().numpy()
-    confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro')
+    confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro', outputdim=args.output_dim)
     with open(outputdir + "log_test_micro.txt", "+a") as f:
         f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, test_loss, test_ce_loss, test_recon_loss, accuracy,precision,recall,f1))
-    confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro')
+    confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro', outputdim=args.output_dim)
     with open(outputdir + "log_test_confusion.txt", "+a") as f:
         for r in range(args.output_dim):
             for c in range(args.output_dim):

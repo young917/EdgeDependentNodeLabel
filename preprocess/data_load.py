@@ -48,11 +48,11 @@ class Hypergraph:
         self.test_inputname = args.test_inputname
         self.use_gpu = args.use_gpu
         self.k = args.k
-        self.n_cls = 3
-
-        self.hedge2node = [] 
+        
+        self.hedge2node = []
         self.node2hedge = [] 
-        self.hedge2nodepos = [] # hyperedge index -> node positions
+        self.hedge2nodepos = [] # hyperedge index -> node positions (after binning)
+        self._hedge2nodepos = [] # hyperedge index -> node positions (before binning)
         self.node2hedgePE = []
         self.hedge2nodePE = []
         self.weight_flag = False
@@ -61,29 +61,27 @@ class Hypergraph:
         self.numhedges = 0
         self.numnodes = 0
         
+        
         self.hedgeindex = {} # papaercode -> index
         self.hedgename = {} # index -> papercode
-        self.e_feat = [] # (To be revised) all ones... (E, 1)
+        self.e_feat = []
 
         self.node_reindexing = {} # nodeindex -> reindex
         self.node_orgindex = {} # reindex -> nodeindex
         self.v_feat = [] # (V, 1)
-
-        self.load_graph(args)
-        self.hedge2type = torch.zeros(self.numhedges) #[0 for _ in range(self.numhedges)] # 0 - train, 1 - val, 2 - test
         
+        self.load_graph(args)        
         print("Data is prepared")
         
     def load_graph(self, args):
+        # construct connection  -------------------------------------------------------
         hset = []
         if args.k > 0:
             with open(self.inputdir + self.dataname + "/sampled_hset_" + str(args.k) + ".txt", "r") as f:
                 for line in f.readlines():
                     line = line.rstrip()
                     hset.append(int(line))
-                    
         self.max_len = 0
-        # construct connection  -------------------------------------------------------
         with open(self.inputdir + self.dataname + "/hypergraph.txt", "r") as f:
             for _hidx, line in enumerate(f.readlines()):
                 if (args.k == 0) or ((args.k > 0) and (_hidx in hset)):
@@ -99,8 +97,11 @@ class Hypergraph:
                     else:
                         self.hedgeindex[_hidx] = hidx
                         self.hedgename[hidx] = _hidx
+                    self.hedgeindex[_hidx] = hidx
+                    self.hedgename[hidx] = _hidx
                     self.hedge2node.append([])
                     self.hedge2nodepos.append([])
+                    self._hedge2nodepos.append([])
                     self.hedge2nodePE.append([])
                     self.hedge2nodeweight.append([])
                     self.e_feat.append([])
@@ -130,11 +131,41 @@ class Hypergraph:
         for vhedges in self.node2hedge:
             if self.max_len < len(vhedges):
                 self.max_len = len(vhedges)
-        print("Max Size / Degree = ", self.max_len)
+        
+        # Split Data ------------------------------------------------------------------------
+        self.test_index = []
+        self.valid_index = []
+        self.validsize = 0
+        self.testsize = 0
+        self.trainsize = 0
+        self.hedge2type = torch.zeros(self.numhedges)
+        
+        assert os.path.isfile(self.inputdir + self.dataname + "/" + self.valid_inputname + ".txt")
+        with open(self.inputdir + self.dataname + "/" + self.valid_inputname + ".txt", "r") as f:
+            for line in f.readlines():
+                name = line.rstrip()
+                if self.exist_hedgename is False:
+                    name = int(name)
+                index = self.hedgeindex[name]
+                self.valid_index.append(index)
+            self.hedge2type[self.valid_index] = 1
+            self.validsize = len(self.valid_index)
+        if os.path.isfile(self.inputdir + self.dataname + "/" + self.test_inputname + ".txt"):
+            with open(self.inputdir + self.dataname + "/" + self.test_inputname + ".txt", "r") as f:
+                for line in f.readlines():
+                    name = line.rstrip()
+                    if self.exist_hedgename is False:
+                        name = int(name)
+                    index = self.hedgeindex[name]
+                    self.test_index.append(index)
+                assert len(self.test_index) > 0
+                self.hedge2type[self.test_index] = 2
+                self.testsize = len(self.test_index)
+        self.trainsize = self.numhedges - (self.validsize + self.testsize)
         
         # extract target ---------------------------------------------------------
         print("Extract labels")
-        with open(self.inputdir + self.dataname + "/hypergraph_pos.txt", "r") as f:
+        with open("rankingdata/" + self.dataname + "/hypergraph_pos.txt", "r") as f:
             for _hidx, line in enumerate(f.readlines()):
                 tmp = line.split("\t")
                 if self.exist_hedgename:
@@ -147,15 +178,42 @@ class Hypergraph:
                     if (_hidx not in self.hedgeindex):
                         continue
                     hidx = self.hedgeindex[_hidx]
-                positions = [int(i) for i in tmp]
+                if args.binning > 0:
+                    positions = [float(i) for i in tmp]
+                    for nodepos in positions:
+                        self._hedge2nodepos[hidx].append(nodepos)
+                else:
+                    positions = [int(i) for i in tmp]
                 for nodepos in positions:
                     self.hedge2nodepos[hidx].append(nodepos)
-                assert len(self.hedge2nodepos[hidx]) == len(self.hedge2node[hidx])
-        
-        self.v_feat = torch.tensor(self.v_feat).type('torch.FloatTensor')
-        for h in range(len(self.e_feat)):
-            self.e_feat[h] = [0 for _ in range(args.dim_edge)]
-        self.e_feat = torch.tensor(self.e_feat).type('torch.FloatTensor')
+        # labeled by binning
+        if args.binning > 0:
+            weights = sorted([w for h in self.get_data(type=0) for w in self._hedge2nodepos[h]])
+            total_num = len(weights)
+            cum = 0
+            self.binindex = []
+            for w in weights:
+                cum += 1
+                if (cum / total_num) >=  ((1.0 / args.binning) * (len(self.binindex) + 1)):
+                    self.binindex.append(w)
+            print("BinIndex", self.binindex)
+            with open(self.inputdir + self.dataname + "/binindex.txt", "w") as f:
+                for binvalue in self.binindex:
+                    f.write(str(binvalue) + "\n")
+            # float -> int
+            for h in range(self.numhedges):
+                for i, w in enumerate(self._hedge2nodepos[h]):
+                    for bi, bv in enumerate(self.binindex):
+                        if w <= bv:
+                            self.hedge2nodepos[h][i] = bi
+                            break
+                        elif bi == (args.output_dim - 1) and w > bv:
+                            self.hedge2nodepos[h][i] = bi
+                            break
+            # check
+            for h in range(self.numhedges):
+                for w in self.hedge2nodepos[h]:
+                    assert w in range(args.binning), str(w)
         
         # extract PE ----------------------------------------------------------------------------------------------------
         # hedge2nodePE
@@ -292,7 +350,7 @@ class Hypergraph:
                             for _pe in self.hedge2nodePE[hidx][vidx]:
                                 assert _pe >= 0
                 self.weight_flag = True
-                
+        
         # For HGNN ----------------------------------------------------------------------------------
         if args.embedder == "hgnn" or args.embedder == "hcha":
             nodedeg = []
@@ -354,32 +412,6 @@ class Hypergraph:
                 degE.append(avgdeg)
             self.degV = torch.Tensor(degV).pow(-0.5).unsqueeze(-1)
             self.degE = torch.Tensor(degE).pow(-0.5).unsqueeze(-1)
-    
-    def split_data(self, val_ratio, test_ratio, seed=2022):
-        test_index = []
-        valid_index = []
-        if val_ratio > 0:
-            with open(self.inputdir + self.dataname + "/" + self.valid_inputname + "_" + str(self.k) + ".txt", "r") as f:
-                for line in f.readlines():
-                    name = line.rstrip()
-                    if self.exist_hedgename is False:
-                        name = int(name)
-                    index = self.hedgeindex[name]
-                    valid_index.append(index)
-        if test_ratio > 0:
-            with open(self.inputdir + self.dataname + "/" + self.test_inputname + "_" + str(self.k) + ".txt", "r") as f:
-                for line in f.readlines():
-                    name = line.rstrip()
-                    if self.exist_hedgename is False:
-                        name = int(name)
-                    index = self.hedgeindex[name]
-                    test_index.append(index)
-            assert len(test_index) > 0
-        
-        self.hedge2type[test_index] = 2
-        self.hedge2type[valid_index] = 1
-        self.validsize = len(valid_index)
-        self.testsize = len(test_index)
 
     def get_data(self, type=0):
         hedgelist = ((self.hedge2type == type).nonzero(as_tuple=True)[0])

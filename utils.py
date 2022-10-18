@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument('--valid_inputname', default='valid_hindex', type=str)
     parser.add_argument('--test_inputname', default='test_hindex', type=str)
     #     feature
-    parser.add_argument('--binning', default=0.1, type=float) # clustering data
+    parser.add_argument('--binning', default=0, type=int # downstream data
     # random walk from Hyper-SAGNN
     parser.add_argument('-l', '--walk-length', type=int, default=40, help='Length of walk per source')
     parser.add_argument('-r', '--num-walks', type=int, default=10, help='Number of walks per source')
@@ -128,8 +128,11 @@ def parse_args():
     # ---------------------------------------------------------------------------------------------------
     return args
 
-def get_clf_eval(y_test, pred, avg='micro'):
-    confusion = confusion_matrix(y_test, pred)
+def get_clf_eval(y_test, pred, avg='micro', outputdim=None):
+    if outputdim is not None:
+        confusion = confusion_matrix(y_test, pred, labels=np.arange(outputdim))
+    else:
+        confusion = confusion_matrix(y_test, pred)
     accuracy = accuracy_score(y_test, pred)
     precision = precision_score(y_test, pred, average=avg)
     recall = recall_score(y_test, pred, average=avg)

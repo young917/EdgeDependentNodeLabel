@@ -232,7 +232,7 @@ class TransformerLayer(nn.Module):
             for batch_idx in range(batchsize):
                 W[batch_idx,:,:] = W[batch_idx,:,argsort_idx[batch_idx]]
             
-        # Encode
+        # Attention
         if self.att_type_v == "OrderPE":
             v = v + self.pe_v(W)
         for i, layer in enumerate(self.enc_v):
@@ -241,7 +241,7 @@ class TransformerLayer(nn.Module):
             else:
                 v = layer(v)
         v = self.dropout(v)
-        # Decode
+        # Aggregate
         o = v
         for i, layer in enumerate(self.dec_v):
             if i == 0 and self.agg_type_v == "PrevQ":
@@ -258,14 +258,14 @@ class TransformerLayer(nn.Module):
         else:
             W = None
 
-        # Encode
+        # Attention
         if self.att_type_e == "OrderPE":
             v = v + self.pe_e(W)
         for i, layer in enumerate(self.enc_e):
             v = layer(v)
         v = self.dropout(v)
         
-        # Decode
+        # Aggregate
         o = v
         for i, layer in enumerate(self.dec_e):
             if i == 0 and self.agg_type_e == "PrevQ":

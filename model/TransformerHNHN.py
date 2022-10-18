@@ -15,11 +15,9 @@ class TransformerHNHNLayer(nn.Module):
                  output_vdim, 
                  output_edim,
                  weight_dim,
-                 num_imab_layers=1,
-                 num_isab_layers=1,
-                 num_mab_layers=0,
-                 num_pma_layers=0,
-                 num_sab_layers=0,
+                 att_type_v = "OrderPE",
+                 agg_type_v = "PrevQ",
+                 num_att_layer = 2,
                  dim_hidden = 128,
                  num_heads=4, 
                  num_inds=4,
@@ -33,54 +31,38 @@ class TransformerHNHNLayer(nn.Module):
         self.input_vdim = input_vdim
         self.input_edim = input_edim
         self.hidden_dim = dim_hidden
+        self.query_dim = dim_hidden
         self.output_vdim = output_vdim
         self.output_edim = output_edim
         self.weight_dim = weight_dim
-        self.num_imab_layers = num_imab_layers
-        self.num_isab_layers = num_isab_layers
-        self.num_mab_layers = num_mab_layers
-        self.num_pma_layers = num_pma_layers
-        self.num_sab_layers = num_sab_layers
+        self.att_type_v = att_type_v
+        self.agg_type_v = agg_type_v
+        self.num_att_layer = num_att_layer
         self.activation = activation
         self.dropout = dropout
         self.lnflag = ln
         
-        # when ranking input is exist,
-        if num_imab_layers > 0:
-            assert weight_dim > 0
+        if self.att_type_v == "OrderPE":
+            self.pe_v = nn.Linear(weight_dim, input_vdim)
+        self.dropoutlayer = nn.Dropout(dropout)
         
         # For Node -> Hyperedge
-        #     encoding part: create new node representation specialized in hyperedge
+        #     Attention Part
+        dimension = input_vdim
         self.enc_v = nn.ModuleList()
-        for i in range(num_imab_layers):
-            if i == 0:
-                self.enc_v.append(IMAB(weight_dim, input_vdim, dim_hidden, num_heads, num_inds, ln=ln))
-            else:
-                self.enc_v.append(IMAB(weight_dim, dim_hidden, dim_hidden, num_heads, num_inds, ln=ln))
-        for i in range(num_isab_layers):
-            if num_imab_layers == 0 and i == 0:
-                self.enc_v.append(ISAB(input_vdim, dim_hidden, num_heads, num_inds, ln=ln)) # input_vdim, dim_hidden, num_heads, num_inds, ln=ln
-            else:
-                self.enc_v.append(ISAB(dim_hidden, dim_hidden, num_heads, num_inds, ln=ln)) 
-        if len(self.enc_v) > 0:
-            self.enc_v.append(nn.Dropout(dropout))
-        #     decoding part: aggregate embeddings
+        for _ in range(self.num_att_layer):
+            if self.att_type_v != "NoAtt":
+                self.enc_v.append(ISAB(dimension, dim_hidden, num_heads, num_inds, ln=ln))
+                dimension = dim_hidden
+        #     Aggregate Part
         self.dec_v = nn.ModuleList()
-        if num_mab_layers > 0:
-            assert num_pma_layers == 0 # use hedge or node's own feature
-            if (num_imab_layers + num_isab_layers) == 0:
-                self.dec_v.append(MAB(input_edim, input_vdim, dim_hidden, num_heads, ln=ln))
-            else:
-                self.dec_v.append(MAB(input_edim, dim_hidden, dim_hidden, num_heads, ln=ln)) # input_edim, dim_hidden, dim_hidden, num_heads, ln=ln
-        elif num_pma_layers > 0: # use variable
-            if (num_imab_layers + num_isab_layers) == 0:
-                self.dec_v.append(PMA(input_vdim,  dim_hidden, num_heads, 1, ln=ln, numlayers=num_pma_layers))
-            else:
-                self.dec_v.append(PMA(dim_hidden, dim_hidden, num_heads, 1, ln=ln, numlayers=num_pma_layers))
-        # else: use average
-        for i in range(num_sab_layers):
-            self.dec_v.append(SAB(dim_hidden, dim_hidden, num_heads, ln=ln))
-        self.dec_v.append(nn.Dropout(dropout))
+        if self.agg_type_v == "PrevQ":
+            self.dec_v.append(MAB(input_edim, dimension, dim_hidden, num_heads, ln=ln))
+        elif self.agg_type_v == "pure":
+            self.dec_v.append(PMA(dimension,  dim_hidden, num_heads, 1, ln=ln, numlayers=1))
+        elif self.agg_type_v == "pure2":
+            self.dec_v.append(PMA(dimension,  dim_hidden, num_heads, 1, ln=ln, numlayers=2))
+        self.dec_v.append(nn.Dropout(self.dropout))
         self.dec_v.append(nn.Linear(dim_hidden, output_edim))
         
         # Use HNHN
@@ -89,37 +71,30 @@ class TransformerHNHNLayer(nn.Module):
         nn.init.xavier_normal_(self.ev_lin.weight, gain=gain)
         
     def message_func(self, edges):
-        if self.weight_dim > 0: # weight represents ranking information
+        if self.weight_dim > 0: # weight represents positional information
             return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight']}
         else:
             return {'q': edges.dst['feat'], 'v': edges.src['feat']}
 
     def v_reduce_func(self, nodes):
-        # nodes.mailbox['v' or 'q'].shape = (num batch, hyperedge size, feature dim)
-        Q = nodes.mailbox['q'][:,0:1,:] # <- Because nodes.mailbox['q'][i,j] == nodes.mailbox['q'][i,j+1] 
+        Q = nodes.mailbox['q'][:,0:1,:]
         v = nodes.mailbox['v']
         if self.weight_dim > 0:
             W = nodes.mailbox['weight']
-        else:
-            W = None
-            
-        # Encode
+             
+        # Attention
+        if self.att_type_v == "OrderPE":
+            v = v + self.pe_v(W)
         for i, layer in enumerate(self.enc_v):
-            if i < self.num_imab_layers:
-                v = layer(W, v)
-            else:
-                v = layer(v)
-        # Decode
-        if self.num_mab_layers == 0 and self.num_pma_layers == 0:
-            o = torch.mean(v, dim=1, keepdim=True)
+            v = layer(v)
+        v = self.dropoutlayer(v)
+        # Aggregate
+        o = v
         for i, layer in enumerate(self.dec_v):
-            if i == 0 and self.num_mab_layers > 0:
-                o = layer(Q, v)
-            elif i == 0 and self.num_pma_layers > 0:
-                o = layer(v)
+            if i == 0 and self.agg_type_v == "PrevQ":
+                o = layer(Q, o)
             else:
                 o = layer(o)
-        
         return {'o': o}
     
     def weight_hnhn_fn(self, edges):
@@ -172,11 +147,9 @@ class TransformerHNHN(nn.Module):
                  num_layers=2,
                  num_heads=4,
                  num_inds=4,
-                 num_imab_layers=1,
-                 num_isab_layers=1,
-                 num_mab_layers=0,
-                 num_pma_layers=0,
-                 num_sab_layers=0,
+                 att_type_v = "OrderPE",
+                 agg_type_v = "PrevQ",
+                 num_att_layer = 2,
                  layernorm = False,
                  dropout=0.6,
                  activation=F.relu):
@@ -187,25 +160,21 @@ class TransformerHNHN(nn.Module):
         self.layers = nn.ModuleList()               
         if num_layers == 1:
              self.layers.append(model(input_vdim, input_edim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
-                                      num_imab_layers=num_imab_layers, num_isab_layers=num_isab_layers, 
-                                      num_mab_layers=num_mab_layers, num_pma_layers=num_pma_layers, num_sab_layers=num_sab_layers,
+                                      att_type_v=att_type_v, agg_type_v=agg_type_v, num_att_layer=num_att_layer,
                                       dropout=dropout, ln=layernorm, activation=None))
         else:
             for i in range(num_layers):
                 if i == 0:
                     self.layers.append(model(input_vdim, input_edim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
-                                             num_imab_layers=num_imab_layers, num_isab_layers=num_isab_layers, 
-                                             num_mab_layers=num_mab_layers, num_pma_layers=num_pma_layers, num_sab_layers=num_sab_layers,
+                                             att_type_v=att_type_v, agg_type_v=agg_type_v, num_att_layer=num_att_layer,
                                              dropout=dropout, ln=layernorm, activation=self.activation))
                 elif i == (num_layers - 1):
                     self.layers.append(model(hidden_dim, hidden_dim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
-                                             num_imab_layers=num_imab_layers, num_isab_layers=num_isab_layers, 
-                                             num_mab_layers=num_mab_layers, num_pma_layers=num_pma_layers, num_sab_layers=num_sab_layers, 
+                                             att_type_v=att_type_v, agg_type_v=agg_type_v, num_att_layer=num_att_layer,
                                              dropout=dropout, ln=layernorm, activation=None))
                 else:
                     self.layers.append(model(hidden_dim, hidden_dim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
-                                             num_imab_layers=num_imab_layers, num_isab_layers=num_isab_layers, 
-                                             num_mab_layers=num_mab_layers, num_pma_layers=num_pma_layers, num_sab_layers=num_sab_layers,
+                                             att_type_v=att_type_v, agg_type_v=agg_type_v, num_att_layer=num_att_layer,
                                              dropout=dropout, ln=layernorm, activation=self.activation))
     
     def forward(self, blocks, vfeat, efeat, e_reg_weight, v_reg_sum):
