@@ -1,0 +1,1000 @@
+'conf/aaai/AnbulaganPSS05'	0	1	1	2
+'conf/aaai/ArensHV91'	0	1	2
+'conf/aaai/AzizGMMSW14'	0	1	1	1	1	2
+'conf/aaai/BarkerACFFGHHIKMPPTY07'	0	1	1	1	1	1	1	1	1	1	1	1	1	1	2
+'conf/aaai/BhatIM06'	0	1	2
+'conf/aaai/BillingsPSS98'	0	1	1	2
+'conf/aaai/BillingsPSS99'	0	1	1	2
+'conf/aaai/BrantingP91'	0	2
+'conf/aaai/BurhansC06'	0	2
+'conf/aaai/BurhansMVPSW06'	0	1	1	1	1	2
+'conf/aaai/BurhansNS05'	0	1	2
+'conf/aaai/CaliGKLP10'	0	1	1	1	2
+'conf/aaai/ChandraNMD15'	0	1	1	2
+'conf/aaai/ChangCH11'	0	1	2
+'conf/aaai/ChangRRS08'	0	1	1	2
+'conf/aaai/CharniakHJP93'	0	1	1	2
+'conf/aaai/Chu-CarrollF11'	0	2
+'conf/aaai/CrandallAG11'	0	1	2
+'conf/aaai/DesaiCS07'	0	1	2
+'conf/aaai/DesaiS08'	0	2
+'conf/aaai/DickersonGKPS14'	0	1	1	1	2
+'conf/aaai/DomingosKPRS06'	0	1	1	1	2
+'conf/aaai/DornhegeEKBN10'	0	1	1	1	2
+'conf/aaai/FaberTW13'	0	1	2
+'conf/aaai/FanP04'	0	2
+'conf/aaai/FangH10'	0	2
+'conf/aaai/FeatherstonSUU14'	0	1	1	2
+'conf/aaai/FeinerM90'	0	2
+'conf/aaai/GargJN13'	0	1	2
+'conf/aaai/GibsonLBSB12'	0	1	1	1	2
+'conf/aaai/GrastienARK07'	0	1	1	2
+'conf/aaai/HajajDHSS15'	0	1	1	1	2
+'conf/aaai/HaraborG11'	0	2
+'conf/aaai/HawkinHS12'	0	1	2
+'conf/aaai/HiguchiKFHKT91'	0	1	1	1	1	2
+'conf/aaai/HoffmannBP07'	0	1	2
+'conf/aaai/HuaL15'	0	2
+'conf/aaai/JainNN14'	0	1	2
+'conf/aaai/JohansonBBB12'	0	1	1	2
+'conf/aaai/KarpKP14'	0	1	2
+'conf/aaai/KellerG15'	0	2
+'conf/aaai/KilbySTW05'	0	1	1	2
+'conf/aaai/KilbySTW06'	0	1	1	2
+'conf/aaai/LanighanSBS11'	0	1	1	2
+'conf/aaai/LeeBGWM08'	0	1	1	1	2
+'conf/aaai/LeeLJH10'	0	1	1	2
+'conf/aaai/LiMR04'	0	1	2
+'conf/aaai/LindesLE15'	0	1	2
+'conf/aaai/LittleAT05'	0	1	2
+'conf/aaai/LochbaumGS90'	0	1	2
+'conf/aaai/LoftinMPTLHR14'	0	1	1	1	1	1	2
+'conf/aaai/MaSN15'	0	1	2
+'conf/aaai/McNaughtonLSS02'	0	1	1	2
+'conf/aaai/MichelNSK96'	0	1	1	2
+'conf/aaai/MitchellCHTBCMG15'	0	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	2
+'conf/aaai/NathDGNZ12'	0	1	1	1	2
+'conf/aaai/OetschTW07'	0	1	2
+'conf/aaai/ParkesP13'	0	2
+'conf/aaai/PeeblesLLCC10'	0	1	1	1	2
+'conf/aaai/PentneyM05'	0	2
+'conf/aaai/PentneyPBK07'	0	1	1	2
+'conf/aaai/PoulinESLGWFPMA06'	0	1	1	1	1	1	1	1	1	2
+'conf/aaai/PoulinSLGWEFPP05'	0	1	1	1	1	1	1	1	2
+'conf/aaai/RichS06'	0	2
+'conf/aaai/RobertsBCI07'	0	1	1	2
+'conf/aaai/RobertsNIML06'	0	1	1	1	2
+'conf/aaai/SandholmLAST98'	0	1	1	1	2
+'conf/aaai/SelkowitzB14'	0	2
+'conf/aaai/SelkowitzHM14'	0	1	2
+'conf/aaai/ShenNS15'	0	1	2
+'conf/aaai/SondheimerN86'	0	2
+'conf/aaai/SrihariB94'	0	2
+'conf/aaai/StracciaLLP10'	0	1	1	2
+'conf/aaai/VallamBMN15'	0	1	1	2
+'conf/aaai/WhiteWBS15'	0	1	1	2
+'conf/aaai/ZhangYWHS11'	0	1	1	1	2
+'conf/aaai/ZinkevichBBKB06'	0	1	1	1	2
+'conf/acl/AwZXS06'	0	1	1	2
+'conf/acl/BearDS92'	0	1	2
+'conf/acl/BenXTLL13'	0	1	1	1	2
+'conf/acl/BlackFK98'	0	1	2
+'conf/acl/ChenJTN06'	0	1	1	2
+'conf/acl/ChenZAL08'	0	1	1	2
+'conf/acl/ChenZL12'	0	1	2
+'conf/acl/DongWHYW15'	0	1	1	1	2
+'conf/acl/DuanZL10'	0	1	2
+'conf/acl/FinchBHS06'	0	1	1	2
+'conf/acl/FysheTMM14'	0	1	1	2
+'conf/acl/GalleyMHS04'	0	1	1	2
+'conf/acl/GamonRCM02'	0	1	1	2
+'conf/acl/GaoAJT07'	0	1	1	2
+'conf/acl/GaoGCL02'	0	1	1	2
+'conf/acl/GoldwaterGJ06'	0	1	2
+'conf/acl/GotoUSTK13'	0	1	1	1	2
+'conf/acl/HaertelRSCM08'	0	1	1	1	2
+'conf/acl/HanZF06'	0	1	2
+'conf/acl/HeWGL09'	0	1	1	2
+'conf/acl/HeWWL12'	0	1	1	2
+'conf/acl/JiangYZLW09'	0	1	1	1	2
+'conf/acl/JohnsonC04'	0	2
+'conf/acl/KakiSI98'	0	1	2
+'conf/acl/KashiokaKKFB98'	0	1	1	1	2
+'conf/acl/KozarevaH10'	0	2
+'conf/acl/KozarevaRH08'	0	1	2
+'conf/acl/KwasnyS79'	0	2
+'conf/acl/LamarMJB10'	0	1	1	2
+'conf/acl/Li0C14'	0	1	2
+'conf/acl/LiCZC15'	0	1	1	2
+'conf/acl/LiM05'	0	2
+'conf/acl/LiRH14'	0	1	2
+'conf/acl/LiZFZ13'	0	1	1	2
+'conf/acl/LiZNJS03'	0	1	1	1	2
+'conf/acl/LiZS04'	0	1	2
+'conf/acl/LiuHLL07'	0	1	1	2
+'conf/acl/LiuLL05'	0	1	2
+'conf/acl/LiuLL06'	0	1	2
+'conf/acl/LiuWSZ13'	0	1	1	2
+'conf/acl/LiuWWL10'	0	1	1	2
+'conf/acl/LiuWWLL11'	0	1	1	1	2
+'conf/acl/LuoPRH14'	0	1	1	2
+'conf/acl/MaedaKKI88'	0	1	1	2
+'conf/acl/MasonC14'	0	2
+'conf/acl/NiuWW09'	0	1	2
+'conf/acl/PantelGF14'	0	1	2
+'conf/acl/PervouchineLL09'	0	1	2
+'conf/acl/ShenZSZT04'	0	1	1	1	2
+'conf/acl/StoyanovCGRBH10'	0	1	1	1	1	2
+'conf/acl/StoyanovGCR09'	0	1	1	2
+'conf/acl/SuXLHLYZ15'	0	1	1	1	1	1	2
+'conf/acl/TakamatsuSN12'	0	1	2
+'conf/acl/TamuraWSTO13'	0	1	1	1	2
+'conf/acl/TuHFGLL12'	0	1	1	1	1	2
+'conf/acl/VargesQRIR09'	0	1	1	1	2
+'conf/acl/WangLLH10'	0	1	1	2
+'conf/acl/WangUFS14'	0	1	1	2
+'conf/acl/WangZZ11'	0	1	2
+'conf/acl/WatanabeS11'	0	2
+'conf/acl/WuWL05'	0	1	2
+'conf/acl/WuWL06'	0	1	2
+'conf/acl/XiongZAL09'	0	1	1	2
+'conf/acl/XiongZL10'	0	1	2
+'conf/acl/XiongZL11'	0	1	2
+'conf/acl/XiongZL12'	0	1	2
+'conf/acl/YangSLTLL08'	0	1	1	1	1	2
+'conf/acl/YihCHG15'	0	1	1	2
+'conf/acl/ZhangJALTL08'	0	1	1	1	1	2
+'conf/acl/ZhangQZHL15'	0	1	1	1	2
+'conf/acl/ZhangZL10'	0	1	2
+'conf/acl/ZhaoNZLL08'	0	1	1	1	2
+'conf/acl/ZhuW06'	0	2
+'conf/acl/ZhuWSZ13'	0	1	1	2
+'conf/acl/ZwartsJ11'	0	2
+'conf/adbis/EvrendilekDG95'	0	1	2
+'conf/adbis/MatuleviciusLLS10'	0	1	1	2
+'conf/adbis/RusinkiewiczS94'	0	2
+'conf/cade/BeesonW14'	0	2
+'conf/cade/BjornerGMV12'	0	1	1	2
+'conf/cade/HodgsonS01'	0	2
+'conf/cade/LuskMO86'	0	1	2
+'conf/cade/McCuneW92'	0	2
+'conf/cade/MichelHGH12'	0	1	1	2
+'conf/cade/PritchardS90'	0	2
+'conf/cade/SlaneyL90'	0	2
+'conf/cade/SlaneyLM94'	0	1	2
+'conf/cade/WosVSM84'	0	1	1	2
+'conf/chi/BedersonLJHK06'	0	1	1	1	2
+'conf/chi/BickmoreC01'	0	2
+'conf/chi/BickmoreM06'	0	2
+'conf/chi/BickmoreP04'	0	2
+'conf/chi/BickmorePJ09'	0	1	2
+'conf/chi/BickmorePSPSN08'	0	1	1	1	1	2
+'conf/chi/BickmoreS07'	0	2
+'conf/chi/BirnholtzFHB05'	0	1	1	2
+'conf/chi/BlyCBCS98'	0	1	1	1	2
+'conf/chi/BrushAD04'	0	1	2
+'conf/chi/BrushBGC01'	0	1	1	2
+'conf/chi/BrushBGG02'	0	1	1	2
+'conf/chi/BrushWTS05'	0	1	1	2
+'conf/chi/CarterCDHN04'	0	1	1	1	2
+'conf/chi/CarterM05'	0	2
+'conf/chi/CassellBBCCVY99'	0	1	1	1	1	1	2
+'conf/chi/ChanHCYHLC15a'	0	1	1	1	1	1	2
+'conf/chi/ChandrasekaranMPS04'	0	1	1	2
+'conf/chi/ChenNNBC10'	0	1	1	1	2
+'conf/chi/ChhabraR13'	0	2
+'conf/chi/ChhabraR13a'	0	2
+'conf/chi/ChiZXYW11'	0	1	1	1	2
+'conf/chi/ChiZYXYS10'	0	1	1	1	1	2
+'conf/chi/ChungS09'	0	2
+'conf/chi/ChurchillDELS10'	0	1	1	1	2
+'conf/chi/CrnovrsaninWM14'	0	1	2
+'conf/chi/DavisHHJNT12'	0	1	1	1	1	2
+'conf/chi/DonaldsonES05'	0	1	2
+'conf/chi/DowLOMBG05'	0	1	1	1	1	2
+'conf/chi/DowMHMM07'	0	1	1	1	2
+'conf/chi/DowMMM10'	0	1	1	2
+'conf/chi/DrayKRSW05'	0	1	1	1	2
+'conf/chi/DuarteC13'	0	2
+'conf/chi/FioreTS02'	0	1	2
+'conf/chi/GruenSBR99'	0	1	1	2
+'conf/chi/GuanC07'	0	2
+'conf/chi/GuerreiroBCGYA13'	0	1	1	1	1	2
+'conf/chi/HaberIL94'	0	1	2
+'conf/chi/HarrisonXSH14'	0	1	1	2
+'conf/chi/HinckleyCBM02'	0	1	1	2
+'conf/chi/HornKO02'	0	1	2
+'conf/chi/HoweKPA12'	0	1	1	2
+'conf/chi/HurstHM07'	0	1	2
+'conf/chi/IsaacsTFJKSB96'	0	1	1	1	1	1	2
+'conf/chi/KaratHHK00'	0	1	1	2
+'conf/chi/KaratHHK99'	0	1	1	2
+'conf/chi/KaratKBF06'	0	1	1	2
+'conf/chi/KhaledNB13'	0	1	2
+'conf/chi/KimCOSK10'	0	1	1	1	2
+'conf/chi/KimMP14'	0	1	2
+'conf/chi/KimMP15'	0	1	2
+'conf/chi/KimP10'	0	2
+'conf/chi/KimP12'	0	2
+'conf/chi/KimPM13'	0	1	2
+'conf/chi/KimRZPH11'	0	1	1	1	2
+'conf/chi/KitturCS09'	0	1	2
+'conf/chi/LaputLWXBH15'	0	1	1	1	1	2
+'conf/chi/LazarBHJK05'	0	1	1	1	2
+'conf/chi/LazarHJKB08'	0	1	1	1	2
+'conf/chi/LeeLSMKD04'	0	1	1	1	1	2
+'conf/chi/LiangCCPCLYC13'	0	1	1	1	1	1	1	2
+'conf/chi/LiangCCPCLYC13a'	0	1	1	1	1	1	1	2
+'conf/chi/LiangCTKHYC14b'	0	1	1	1	1	1	2
+'conf/chi/LiangSCCCYCC15'	0	1	1	1	1	1	1	2
+'conf/chi/MarmasseS03'	0	2
+'conf/chi/MarxS96'	0	2
+'conf/chi/MeyersBDSC06'	0	1	1	1	2
+'conf/chi/MorrisHPW06'	0	1	1	2
+'conf/chi/MunsonR10'	0	2
+'conf/chi/NelsonCDHM04'	0	1	1	1	2
+'conf/chi/NelsonIPA99'	0	1	1	2
+'conf/chi/NeustaedterBS05'	0	1	2
+'conf/chi/OhFKAGMD02'	0	1	1	1	1	1	2
+'conf/chi/PierceP15'	0	2
+'conf/chi/PierceSP10'	0	1	2
+'conf/chi/PrevostHCC99'	0	1	1	2
+'conf/chi/RashidLTRKR06'	0	1	1	1	1	2
+'conf/chi/RenSJB14'	0	1	1	2
+'conf/chi/RohallGMWSKSDAW04'	0	1	1	1	1	1	1	1	1	2
+'conf/chi/RuiGC01'	0	1	2
+'conf/chi/SaC06'	0	2
+'conf/chi/SaCDR08'	0	1	1	2
+'conf/chi/SaCFS10'	0	1	1	2
+'conf/chi/SaNC13'	0	1	2
+'conf/chi/SambasivanC12'	0	2
+'conf/chi/SchianoEB06'	0	1	2
+'conf/chi/SchmandtM95'	0	2
+'conf/chi/SchwarzHHM10'	0	1	1	2
+'conf/chi/SiegelDM07'	0	1	2
+'conf/chi/SongBGICH11'	0	1	1	1	1	2
+'conf/chi/StifelmanAS01'	0	1	2
+'conf/chi/StifelmanASH93'	0	1	1	2
+'conf/chi/TsaiLHLH13'	0	1	1	1	2
+'conf/chi/VasilescuPRBSDF15'	0	1	1	1	1	1	2
+'conf/chi/WangGXZYB15'	0	1	1	1	1	2
+'conf/chi/WangHCCL15'	0	1	1	1	2
+'conf/chi/WhittakerS96'	0	2
+'conf/chi/WilsonRCC13'	0	1	1	2
+'conf/chi/XiaoHH13'	0	1	2
+'conf/chi/YehLKGLKSP06'	0	1	1	1	1	1	1	2
+'conf/chi/YewSC11'	0	1	2
+'conf/chi/YuCLTHTHCCHH11'	0	1	1	1	1	1	1	1	1	1	2
+'conf/chi/ZhouGPB14'	0	1	1	2
+'conf/colt/RatschWMOLM00'	0	1	1	1	1	2
+'conf/colt/SriperumbudurGFLS08'	0	1	1	1	2
+'conf/compgeom/ArkinMMRS93'	0	1	1	1	2
+'conf/compgeom/BoseDMS13'	0	1	1	2
+'conf/compgeom/ContrerasCRU98'	0	1	1	2
+'conf/compgeom/HurtadoNU96'	0	1	2
+'conf/compgeom/RappaportIT86'	0	1	2
+'conf/concur/BruniBFHMM05'	0	1	1	1	1	2
+'conf/concur/BruniFMM00'	0	1	1	2
+'conf/concur/BruniGMS05'	0	1	1	2
+'conf/concur/GianantonioHLP94'	0	1	1	2
+'conf/concur/GianantonioJL10'	0	1	2
+'conf/concur/SongMPZ15'	0	1	1	2
+'conf/coopis/DogacTTETHIB00'	0	1	1	1	1	1	1	2
+'conf/coopis/GokkocaACTKD97'	0	1	1	1	1	2
+'conf/crypto/DolevO97'	0	2
+'conf/csmr/AlawnehH11'	0	2
+'conf/csmr/AlawnehHML14'	0	1	1	2
+'conf/csmr/BrandKVV06'	0	1	1	2
+'conf/csmr/BusingeSB13'	0	1	2
+'conf/csmr/FokaefsTGBS10'	0	1	1	1	2
+'conf/csmr/MurtazaSHC12'	0	1	1	2
+'conf/csmr/PengWZ07'	0	1	2
+'conf/csmr/ZaidmanCDP05'	0	1	1	2
+'conf/cvpr/ChenHHL14'	0	1	1	2
+'conf/cvpr/DaiH12'	0	2
+'conf/cvpr/DarrellMP96'	0	1	2
+'conf/cvpr/GaoZLZXL12'	0	1	1	1	1	2
+'conf/cvpr/GengYXH10'	0	1	1	2
+'conf/cvpr/GuoDH11'	0	1	2
+'conf/cvpr/HariharanKA07'	0	1	2
+'conf/cvpr/HeLX08'	0	1	2
+'conf/cvpr/JiangWYWZL13'	0	1	1	1	1	2
+'conf/cvpr/KarschLRBH13'	0	1	1	1	2
+'conf/cvpr/LiKHH10'	0	1	1	2
+'conf/cvpr/LiaoRWF13'	0	1	1	2
+'conf/cvpr/LuZWMHL12'	0	1	1	1	1	2
+'conf/cvpr/MatsushitaOTS05'	0	1	1	2
+'conf/cvpr/PageKA03'	0	1	2
+'conf/cvpr/PageKSPA01'	0	1	1	1	2
+'conf/cvpr/ShumZK99'	0	1	2
+'conf/cvpr/SmithJA99'	0	1	2
+'conf/cvpr/SmithN93'	0	2
+'conf/cvpr/SmithN94'	0	2
+'conf/cvpr/SukumarBPKA08'	0	1	1	1	2
+'conf/cvpr/TsaiHH93'	0	1	2
+'conf/cvpr/WangFH10'	0	1	2
+'conf/cvpr/WangJHZQ08'	0	1	1	1	2
+'conf/cvpr/WangWKZL12'	0	1	1	1	2
+'conf/cvpr/YaoCAPKA08'	0	1	1	1	1	2
+'conf/dasfaa/HanWZZL15'	0	1	1	1	2
+'conf/dasfaa/KimS12'	0	2
+'conf/dasfaa/LiuHHCG15'	0	1	1	1	2
+'conf/dasfaa/NgTG01'	0	1	2
+'conf/dasfaa/XuE03'	0	2
+'conf/dasfaa/YeLL07'	0	1	2
+'conf/dbpl/FletcherGWGBP07'	0	1	1	1	1	2
+'conf/dbpl/GeladeN07'	0	2
+'conf/dbpl/GrahneW99'	0	2
+'conf/dbpl/MartensN05'	0	2
+'conf/edbt/CasatiCDS06'	0	1	1	2
+'conf/edbt/ChangLQYP15'	0	1	1	1	2
+'conf/edbt/ChangYQL10'	0	1	1	2
+'conf/edbt/CheemaLZZ13'	0	1	1	2
+'conf/edbt/ChengY09'	0	2
+'conf/edbt/ChengYLWY06'	0	1	1	1	2
+'conf/edbt/EltabakhOSHPV13'	0	1	1	1	1	2
+'conf/edbt/Grahne15'	0	1	1	2
+'conf/edbt/HuaP12'	0	2
+'conf/edbt/KusumiNH90'	0	1	2
+'conf/edbt/KutschHMMT06'	0	1	1	1	2
+'conf/edbt/MendellNBHG12'	0	1	1	1	2
+'conf/edbt/SarawagiAM98'	1	2	1
+'conf/edbt/SeshadriN92'	0	2
+'conf/edbt/ShethLW88'	0	1	2
+'conf/edbt/WangSHL09'	0	1	1	2
+'conf/edbt/WilkinsonKGYSND06'	0	1	1	1	1	1	2
+'conf/edbt/WilkinsonS11'	0	2
+'conf/edbt/ZengWZZ09'	0	1	1	2
+'conf/edbt/ZhangPMZ04'	0	1	1	2
+'conf/er/Al-MuhammedEL05'	0	1	2
+'conf/er/AlbertMPP06'	0	1	1	2
+'conf/er/AliDG08'	0	1	2
+'conf/er/AuddinoDDFST92'	0	1	1	1	1	2
+'conf/er/BianchiniCAP09'	0	1	1	2
+'conf/er/BowersDM02'	0	1	2
+'conf/er/BrasethvikG99'	0	2
+'conf/er/CaliGP09'	0	1	2
+'conf/er/CaliGP10'	0	1	2
+'conf/er/CasatiCPP95'	0	1	1	2
+'conf/er/CasatiCPP96'	0	1	1	2
+'conf/er/ChenDH01'	0	1	2
+'conf/er/ChenEL04'	0	1	2
+'conf/er/CivelekDS88'	0	1	2
+'conf/er/DalpiazCGM10'	0	1	1	2
+'conf/er/DalpiazSVGP12'	0	1	1	1	2
+'conf/er/DayalGCWG12'	0	1	1	1	2
+'conf/er/EmbleyCJLNQS98'	0	1	1	1	1	1	2
+'conf/er/EmbleyLA04'	0	1	2
+'conf/er/EmbleyLL11'	0	1	2
+'conf/er/EmbleyLLNTCCDJLLPPTWWZ08'	0	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	2
+'conf/er/EmbleyLLPSZ12'	0	1	1	1	1	2
+'conf/er/EmbleyLLST10'	0	1	1	1	2
+'conf/er/EmbleyLLT11'	0	1	1	2
+'conf/er/EmbleyLW14'	0	1	2
+'conf/er/EmbleyTL02'	0	1	2
+'conf/er/Fernandez-MoctezumaTDM09'	0	1	1	2
+'conf/er/FonsPAP03'	0	1	1	2
+'conf/er/KiyavitskayaZBACMM08'	0	1	1	1	1	1	2
+'conf/er/LiddleCW97'	0	1	2
+'conf/er/LiddleE06'	0	2
+'conf/er/LiddleEW95'	0	1	2
+'conf/er/LiddleYE01'	0	1	2
+'conf/er/MatuleviciusH07'	0	2
+'conf/er/MatuleviciusS02'	0	2
+'conf/er/MatuleviciusS05'	0	2
+'conf/er/MoodySBS02'	0	1	1	2
+'conf/er/PajaDPRG12'	0	1	1	1	2
+'conf/er/PelechanoFAP03'	0	1	1	2
+'conf/er/SpaccapietraP11'	0	2
+'conf/er/TaoDL06'	0	1	2
+'conf/er/ValderasFP05'	0	1	2
+'conf/er/XiaoUL06'	0	1	2
+'conf/er/XuED06'	0	1	2
+'conf/esa/BenderFG06'	0	1	2
+'conf/eurocrypt/KeliherMT01'	0	1	2
+'conf/fase/BruniMM99'	0	1	2
+'conf/fase/EckhardtMAMW12'	0	1	1	1	2
+'conf/fase/RountevKS05'	0	1	2
+'conf/fsttcs/GianantonioF00'	0	2
+'conf/fsttcs/GudmundssonL98'	0	2
+'conf/fsttcs/HarmerL06'	0	2
+'conf/fsttcs/LevcopoulosL84'	0	2
+'conf/gpce/ArnoldusBS11'	0	1	2
+'conf/icalp/BauernoppelKKMNSU95'	0	1	1	1	1	1	2
+'conf/icalp/CzerwinskiMM13'	0	1	2
+'conf/icalp/GottlobLS99'	0	1	2
+'conf/icalp/GottlobPT13'	0	1	2
+'conf/icalp/GyssensBG94'	0	1	2
+'conf/icalp/LevcopoulosLS87'	0	1	2
+'conf/icalp/MalacariaH98'	0	2
+'conf/icalp/MeseguerR02'	0	2
+'conf/iccv/GuoH13'	0	2
+'conf/iccv/LiLKX09'	0	1	1	2
+'conf/iccv/LombaertSGX05'	0	1	1	2
+'conf/iccv/XuWLZLY11'	0	1	1	1	1	2
+'conf/iccv/YehLD07'	0	1	2
+'conf/icde/AgrawalGS97'	0	1	2
+'conf/icde/Al-MuhammedE07'	0	2
+'conf/icde/AnastasiuyRTK15'	0	1	1	2
+'conf/icde/BohannonRSSS99'	0	1	1	1	2
+'conf/icde/BragaCCCDMMT08'	0	1	1	1	1	1	1	2
+'conf/icde/BrunoCR09'	0	1	2
+'conf/icde/CastellanosCD11'	0	1	2
+'conf/icde/ChandramouliGBRS11'	0	1	1	1	2
+'conf/icde/ChaudhuriKPS95'	0	1	1	2
+'conf/icde/ChaudhuriNS02'	0	1	2
+'conf/icde/CzejdoRE87'	0	1	2
+'conf/icde/DelcambreLU91'	0	1	2
+'conf/icde/DelcambreMBDWGALL01'	0	1	1	1	1	1	1	1	2
+'conf/icde/DingE06'	0	2
+'conf/icde/GedikWYL08'	0	1	1	2
+'conf/icde/GilM07'	0	2
+'conf/icde/GrahneLWX01'	0	1	1	2
+'conf/icde/GuhaRS99'	0	1	2
+'conf/icde/GulhaneMMRRSSTT11'	0	1	1	1	1	1	1	1	2
+'conf/icde/GuptaDGUW09'	0	1	1	1	2
+'conf/icde/HeXZS15'	0	1	1	2
+'conf/icde/HillyerRS99'	0	1	2
+'conf/icde/HoweMRR08'	0	1	1	2
+'conf/icde/HsuS91'	0	2
+'conf/icde/HuaPZL08'	0	1	1	2
+'conf/icde/HuangGCCH14'	0	1	1	1	2
+'conf/icde/IrmakBK09'	0	1	2
+'conf/icde/IshibashiMKHKYS06'	0	1	1	1	1	1	2
+'conf/icde/KangMSXZ07'	0	1	1	1	2
+'conf/icde/KimS12'	0	2
+'conf/icde/KimWPS10'	0	1	1	2
+'conf/icde/LabioQA97'	0	1	2
+'conf/icde/LinXG14'	0	1	2
+'conf/icde/LinXXL15'	0	1	1	2
+'conf/icde/LometBMS06'	0	1	1	1	1	2
+'conf/icde/MohanKSW06'	0	1	1	2
+'conf/icde/NakamuraY88'	0	2
+'conf/icde/OzdenRS97'	0	1	2
+'conf/icde/PapadiasSTM04'	0	1	1	2
+'conf/icde/PeiJZ05'	0	1	2
+'conf/icde/QinYCT09'	0	1	1	2
+'conf/icde/RastogiS99'	0	2
+'conf/icde/RodigerMURK014'	0	1	1	1	1	2
+'conf/icde/SatoHY06'	0	1	2
+'conf/icde/ShaullSX08'	0	1	2
+'conf/icde/SimitsisWDH13'	0	1	1	2
+'conf/icde/SrivastavaHMKT06'	0	1	1	1	2
+'conf/icde/TaoPLXYX10'	0	1	1	1	1	2
+'conf/icde/TaoPZ02'	0	1	2
+'conf/icde/TaoXLZ08'	0	1	1	2
+'conf/icde/TaoXP06'	0	1	2
+'conf/icde/UrbanD86'	0	2
+'conf/icde/UrbanD87'	0	2
+'conf/icde/UrbanKN92'	0	1	2
+'conf/icde/UrbanUD84'	0	1	2
+'conf/icde/VenkataramanNL98'	0	1	2
+'conf/icde/YangWWY02'	0	1	1	2
+'conf/icde/YangYTM10'	0	1	1	2
+'conf/icde/YuD92'	0	2
+'conf/icde/YuLZ13'	0	1	2
+'conf/icde/YuanQLCZ15'	0	1	1	1	2
+'conf/icde/YuanSCTL12'	0	1	1	1	2
+'conf/icde/ZhuY013'	0	1	2
+'conf/icde/ZinnBML09'	0	1	1	2
+'conf/icdt/AmelootB12'	0	2
+'conf/icdt/AmelootKNZ15'	0	1	1	2
+'conf/icdt/AntonopoulosHMN12'	0	1	1	2
+'conf/icdt/BjorklundGMM09'	0	1	1	2
+'conf/icdt/CaldersP01'	0	2
+'conf/icdt/FletcherGLBGVW11'	0	1	1	1	1	1	2
+'conf/icdt/FletcherGWGP07'	0	1	1	1	2
+'conf/icdt/GeladeMN07'	0	1	2
+'conf/icdt/GrahneO10'	0	2
+'conf/icdt/GrahneO12'	0	2
+'conf/icdt/GrahneSS97'	0	1	2
+'conf/icdt/GrahneT01'	0	2
+'conf/icdt/GroheGLSTB07'	0	1	1	1	1	2
+'conf/icdt/MartensN03'	0	2
+'conf/icdt/MartensNS05'	0	1	2
+'conf/icdt/ZeumeS14'	0	2
+'conf/icml/BowlingJBS08'	0	1	1	2
+'conf/icml/ChangSGR10'	0	1	1	2
+'conf/icml/ChapelleCZ06'	0	1	2
+'conf/icml/ClarkS15'	0	2
+'conf/icml/DegrisSW06'	0	1	2
+'conf/icml/DegrisWS12'	0	1	2
+'conf/icml/FrancLM08'	0	1	2
+'conf/icml/FrancZS11'	0	1	2
+'conf/icml/GreinerGK96'	0	1	2
+'conf/icml/GreinerGR96'	0	1	2
+'conf/icml/GrunewalderLBPG12'	0	1	1	1	2
+'conf/icml/HuS14'	0	2
+'conf/icml/JetchevT11'	0	2
+'conf/icml/NgoT14'	0	2
+'conf/icml/RachlinKSA94'	0	1	1	2
+'conf/icml/SatoKN14'	0	1	2
+'conf/icml/SilverLHDWR14'	0	1	1	1	1	2
+'conf/icml/SonnenburgRS05'	0	1	2
+'conf/icml/WeinbergerDLSA09'	0	1	1	1	2
+'conf/icml/XuKHW13'	0	1	1	2
+'conf/icml/XuWS09'	0	1	2
+'conf/icsm/FokaefsS13'	0	2
+'conf/icsm/FokaefsSTS10'	0	1	1	2
+'conf/icsm/HerraizGRG07'	0	1	1	2
+'conf/icsm/KhatchadourianSR07'	0	1	2
+'conf/icsm/KlintLV13'	0	1	2
+'conf/icsm/KoutersVSB12'	0	1	1	2
+'conf/icsm/LandmanSV14'	0	1	2
+'conf/icsm/LiGMMMGC09'	0	1	1	1	1	1	2
+'conf/icsm/MadhavjiT03'	0	2
+'conf/icsm/NandaM02'	0	2
+'conf/icsm/OliveiraLVS14'	0	1	1	2
+'conf/icsm/QianPXJZ13'	0	1	1	1	2
+'conf/icsm/RountevVYS10'	0	1	1	2
+'conf/icsm/SmitGHS11'	0	1	1	2
+'conf/icsm/TsantalisNS11'	0	1	2
+'conf/icsm/WangPXZ11'	0	1	1	2
+'conf/icsm/XingS05'	0	2
+'conf/icsm/ZhangBJAL08'	0	1	1	1	2
+'conf/icsm/ZhangPXZ12'	0	1	1	2
+'conf/ijcai/AbramskyGK13'	0	1	2
+'conf/ijcai/AllenGZ05'	0	1	2
+'conf/ijcai/AlonFLT15'	0	1	1	2
+'conf/ijcai/AppeltHBIT93'	0	1	1	1	2
+'conf/ijcai/AzizGGMT15'	0	1	1	1	2
+'conf/ijcai/AzizGMMNW15'	0	1	1	1	1	2
+'conf/ijcai/BaldoniBCS15'	0	1	1	2
+'conf/ijcai/BaldoniBMP15'	0	1	1	2
+'conf/ijcai/BillingsBDHSSS03'	0	1	1	1	1	1	2
+'conf/ijcai/BoscoPB15'	0	1	2
+'conf/ijcai/BozzonBCVQ11'	0	1	1	1	2
+'conf/ijcai/BrantingA95'	0	2
+'conf/ijcai/BrownKBCS77'	0	1	1	1	2
+'conf/ijcai/BruijnEPT07'	0	1	1	2
+'conf/ijcai/CalimeriFLP05'	0	1	1	2
+'conf/ijcai/CardonMZW01'	0	1	1	2
+'conf/ijcai/ChalodhornGGR07'	0	1	1	2
+'conf/ijcai/CoboZIT11'	0	1	1	2
+'conf/ijcai/DellArmiFILP03'	0	1	1	1	2
+'conf/ijcai/ErsanC95'	0	2
+'conf/ijcai/FaberK05'	0	2
+'conf/ijcai/FaberLR05'	0	1	2
+'conf/ijcai/FanBP03'	0	1	2
+'conf/ijcai/FelnerZSH05'	0	1	1	2
+'conf/ijcai/FinchSTS11'	0	1	1	2
+'conf/ijcai/FujitaSB93'	0	1	2
+'conf/ijcai/Geisser0M15'	0	1	2
+'conf/ijcai/GibsonS11'	0	2
+'conf/ijcai/GoldenbergKWS03'	0	1	1	2
+'conf/ijcai/GottlobLS99'	0	1	2
+'conf/ijcai/GuoGS05'	0	1	2
+'conf/ijcai/KilbySW05'	0	1	2
+'conf/ijcai/KitanoHHMW91'	0	1	1	1	2
+'conf/ijcai/KumarZT11'	0	1	2
+'conf/ijcai/KuoH11'	0	2
+'conf/ijcai/KurokawaLMP15'	0	1	1	2
+'conf/ijcai/MarengoBB11'	0	1	2
+'conf/ijcai/MattmullerR07'	0	2
+'conf/ijcai/MeirPR09'	0	1	2
+'conf/ijcai/PinedaLZG13'	0	1	1	2
+'conf/ijcai/SchankCWWW77'	0	1	1	1	2
+'conf/ijcai/SturtevantFBSB09'	0	1	1	1	2
+'conf/ijcai/SumitaOFIHTK93'	0	1	1	1	1	1	2
+'conf/ijcai/TangQLY15'	0	1	1	2
+'conf/ijcai/ThiebauxHN03'	0	1	2
+'conf/ijcai/WangPPCP07'	0	1	1	1	2
+'conf/ijcai/WeldADEGLW03'	0	1	1	1	1	1	2
+'conf/ijcai/WilliamsTS07'	0	1	2
+'conf/ijcai/XiongBZLL13'	0	1	1	1	2
+'conf/ijcai/YangZLZ13'	0	1	1	2
+'conf/ijcai/YiGS15'	0	1	2
+'conf/ijcai/YihGVS07'	0	1	1	2
+'conf/ijcai/ZangMMR07'	0	1	1	2
+'conf/ijcai/ZhaoLYLZ07'	0	1	1	1	2
+'conf/ijcai/ZilbersteinM99'	0	2
+'conf/infocom/AidaMI03'	0	1	2
+'conf/infocom/AlmerothDST97'	0	1	1	2
+'conf/infocom/BejeranoBGR03'	0	1	1	2
+'conf/infocom/BhatnagarB03'	0	2
+'conf/infocom/BianST98'	0	1	2
+'conf/infocom/BouilletLERC02'	0	1	1	1	2
+'conf/infocom/BrahmaDSWFD14'	0	1	1	1	1	2
+'conf/infocom/BreitbartCGRS01'	0	1	1	1	2
+'conf/infocom/BreitbartGMRSS00'	0	1	1	1	1	2
+'conf/infocom/ChaintreauHCDGS06'	0	1	1	1	1	2
+'conf/infocom/ChangMK97'	0	1	2
+'conf/infocom/ChenAMKOY14'	0	1	1	1	1	2
+'conf/infocom/ChenHHL05'	0	1	1	2
+'conf/infocom/ChenHWHL06'	0	1	1	1	2
+'conf/infocom/ChengCZLL09'	0	1	1	1	2
+'conf/infocom/ChengTMCLL08'	0	1	1	1	1	2
+'conf/infocom/ChiussiXK97'	0	1	2
+'conf/infocom/ClarkP15'	0	2
+'conf/infocom/CurtisCELK12'	0	1	1	1	2
+'conf/infocom/DaiP00'	0	2
+'conf/infocom/DailianasB94'	0	2
+'conf/infocom/DailianasB95'	0	2
+'conf/infocom/DailianasYFH00'	0	1	1	2
+'conf/infocom/DingCXC05'	0	1	1	2
+'conf/infocom/EisenmanC07'	0	2
+'conf/infocom/FieldZM95'	0	1	2
+'conf/infocom/GidronA92'	0	2
+'conf/infocom/GilbertGKN09'	0	1	1	2
+'conf/infocom/GrossglauserT01'	0	2
+'conf/infocom/HasegawaMM99'	0	1	2
+'conf/infocom/HsuSPH07'	0	1	1	2
+'conf/infocom/InaiNYM90'	0	1	1	2
+'conf/infocom/IrmakMS05'	0	1	2
+'conf/infocom/JindalAP10'	0	1	2
+'conf/infocom/KamiyamaMK07'	0	1	2
+'conf/infocom/KashyapGDB07'	0	1	1	2
+'conf/infocom/KawaharaLUKY09'	0	1	1	1	2
+'conf/infocom/KimKSLP06'	0	1	1	1	2
+'conf/infocom/KimuraIMSTNWSS14'	0	1	1	1	1	1	1	1	2
+'conf/infocom/KumarB92'	0	2
+'conf/infocom/KumarD95'	0	2
+'conf/infocom/LabourdetteAH92'	0	1	2
+'conf/infocom/LamX95'	0	2
+'conf/infocom/LiQ15'	0	2
+'conf/infocom/LiQ15a'	0	2
+'conf/infocom/LiZQL07'	0	1	1	2
+'conf/infocom/LiuHZXWHA13'	0	1	1	1	1	1	2
+'conf/infocom/MaTC08'	0	1	2
+'conf/infocom/MahdavianB94'	0	2
+'conf/infocom/MaheshwariCD09'	0	1	2
+'conf/infocom/MaheshwariGD07'	0	1	2
+'conf/infocom/MaoD00'	0	2
+'conf/infocom/MurataSM89'	0	1	2
+'conf/infocom/NavdaBGR07'	0	1	1	2
+'conf/infocom/NiculescuB03'	0	2
+'conf/infocom/NiculescuGKI06'	0	1	1	2
+'conf/infocom/OhsitaMAAOSM07'	0	1	1	1	1	1	2
+'conf/infocom/OieKMM93'	0	1	1	2
+'conf/infocom/OieSMKM90'	0	1	1	1	2
+'conf/infocom/OzgurLT07'	0	1	2
+'conf/infocom/PalGPH14'	0	1	1	2
+'conf/infocom/PanPP00'	0	1	2
+'conf/infocom/PanPPW03'	0	1	1	2
+'conf/infocom/PavolvLAC98'	0	1	1	2
+'conf/infocom/PsounisP01'	0	2
+'conf/infocom/RamasubramanianCM02'	0	1	2
+'conf/infocom/RexfordGB96'	0	1	2
+'conf/infocom/SairameshFY95'	0	1	2
+'conf/infocom/SemretLCL00'	0	1	1	2
+'conf/infocom/ShenHYC15'	0	1	1	2
+'conf/infocom/ShimotoMOM90'	0	1	1	2
+'conf/infocom/SoXW02'	0	1	2
+'conf/infocom/SudaG89'	0	2
+'conf/infocom/TakineSH93'	0	1	2
+'conf/infocom/ThakurHH13a'	0	1	2
+'conf/infocom/TuWZYSW15'	0	1	1	1	1	2
+'conf/infocom/VissicchioVCXB14'	0	1	1	1	2
+'conf/infocom/WangWZH11'	0	1	1	2
+'conf/infocom/WangYFZF00'	0	1	1	1	2
+'conf/infocom/WooL98'	0	2
+'conf/infocom/WouhaybiC04'	0	2
+'conf/infocom/WouhaybiSBC08'	0	1	1	2
+'conf/infocom/XiaT03'	0	2
+'conf/infocom/XingZSZW13'	0	1	1	1	2
+'conf/infocom/YamadaMH97'	0	1	2
+'conf/infocom/YanIS08'	0	1	2
+'conf/infocom/YeminiF93'	0	2
+'conf/infocom/ZhangA91'	0	2
+'conf/infocom/ZhangD91'	0	2
+'conf/infocom/ZhangL93'	0	2
+'conf/infocom/ZhuPDSB10'	0	1	1	1	2
+'conf/isaac/AloupisDDELMOOSST02'	0	1	1	1	1	1	1	1	1	1	2
+'conf/isaac/AngeliniBEHLMMO12'	0	1	1	1	1	1	1	2
+'conf/isaac/BoseKKMCPG00'	0	1	1	1	1	1	2
+'conf/isaac/BoseMBCDFML00'	0	1	1	1	1	1	1	2
+'conf/isaac/KyodaITT97'	0	1	1	2
+'conf/iwpc/AlawnehH11'	0	2
+'conf/iwpc/El-RamlySS02'	0	1	2
+'conf/iwpc/XingS04'	0	2
+'conf/kbse/ClarkCKJH11'	0	1	1	1	2
+'conf/kbse/FahmyHC01'	0	1	2
+'conf/kbse/HillsKV14'	0	1	2
+'conf/kbse/KapfhammerSM05'	0	1	2
+'conf/kbse/KiyavitskayaZBACMM07'	0	1	1	1	1	1	2
+'conf/kbse/LowryPPU94'	0	1	1	2
+'conf/kbse/McNaughtonCSSRP04'	0	1	1	1	1	2
+'conf/kbse/McNaughtonCSSRP04a'	0	1	1	1	1	2
+'conf/kbse/PalepuXJ13'	0	1	2
+'conf/kbse/PosnettFD11'	0	1	2
+'conf/kbse/PunshonTSF97'	0	1	1	2
+'conf/kbse/SmithGKS07'	0	1	1	2
+'conf/kbse/XingXJ11'	0	1	2
+'conf/kbse/ZhangPXJWZ13'	0	1	1	1	1	2
+'conf/kdd/CaldersGJ06'	0	1	2
+'conf/kdd/ChandolaSS13'	0	1	2
+'conf/kdd/CohenS04'	0	2
+'conf/kdd/CohenWM03'	0	1	2
+'conf/kdd/El-RamlySS02'	0	1	2
+'conf/kdd/FultonKSW96'	0	1	1	2
+'conf/kdd/HoCLHC09'	0	1	1	1	2
+'conf/kdd/HuaP08'	0	2
+'conf/kdd/HuanWPY04'	0	1	1	2
+'conf/kdd/JinHS09'	0	1	2
+'conf/kdd/KabburNK13'	0	1	2
+'conf/kdd/KatariaKRSS11'	0	1	1	1	2
+'conf/kdd/KuoLCWSCH09'	0	1	1	1	1	1	2
+'conf/kdd/MeiXCHZ06'	0	1	1	1	2
+'conf/kdd/SarawagiCG03'	0	1	2
+'conf/kdd/SatoN07'	0	2
+'conf/kdd/SatpalBSRS11'	0	1	1	1	2
+'conf/kdd/SrihariXS07'	0	1	2
+'conf/kdd/SrikantVA97'	0	1	2
+'conf/kdd/TagamiHTOTT14'	0	1	1	1	1	2
+'conf/kdd/TaoXZ06'	0	1	2
+'conf/kdd/WangYPYY06'	0	1	1	1	2
+'conf/kdd/WongFPW07'	0	1	1	2
+'conf/kdd/XinSMH06'	0	1	1	2
+'conf/kdd/XuHWZ14'	0	1	1	2
+'conf/kdd/YinHY07'	0	1	2
+'conf/kdd/ZengWZK06'	0	1	1	2
+'conf/kdd/ZhengWLL09'	0	1	1	2
+'conf/kdd/ZhuS03'	0	2
+'conf/kdd/ZhuXWL13'	0	1	1	2
+'conf/lics/AbramskyHM98'	0	1	2
+'conf/lics/AbramskyM99'	0	2
+'conf/lics/BaranyGO10'	0	1	2
+'conf/lics/BonchiKM06'	0	1	2
+'conf/lics/HarmerHM07'	0	1	2
+'conf/lics/HarmerM99'	0	2
+'conf/lics/LaurentR03'	0	2
+'conf/lics/MalacariaH99'	0	2
+'conf/lics/MalacariaR91'	0	2
+'conf/lics/ParedaensBG95'	1	2	1
+'conf/mfcs/AbramskyL00'	0	2
+'conf/mfcs/BjorklundMS08'	0	1	2
+'conf/mfcs/BjorklundMS13'	0	1	2
+'conf/mfcs/CerioliM93'	0	2
+'conf/mfcs/GeladeGM09'	0	1	2
+'conf/mfcs/GottlobLV95'	0	1	2
+'conf/mfcs/LoyerS03'	0	2
+'conf/mfcs/LoyerS04'	0	2
+'conf/mfcs/LoyerSS99'	0	1	2
+'conf/mfcs/MartensNS04'	0	1	2
+'conf/mfcs/MontanariP00'	0	2
+'conf/mobicom/AhmedSMBKP07'	0	1	1	1	1	2
+'conf/mobicom/BalanRMPC12'	0	1	1	1	2
+'conf/mobicom/ChakravortyBRCP04'	0	1	1	1	2
+'conf/mobicom/ChanZZ15'	0	1	2
+'conf/mobicom/HsuDH07'	0	1	2
+'conf/mobicom/HuiL08'	0	2
+'conf/mobicom/JainD06'	0	2
+'conf/mobicom/KashyapGD06'	0	1	2
+'conf/mobicom/KashyapGD07'	0	1	2
+'conf/mobicom/LiACZ14'	0	1	1	2
+'conf/mobicom/LiACZ14a'	0	1	1	2
+'conf/mobicom/LiATCZ15'	0	1	1	1	2
+'conf/mobicom/LiaoC98'	0	2
+'conf/mobicom/MaheshwariJD08'	0	1	2
+'conf/mobicom/NiculescuN03'	0	2
+'conf/mobicom/NiculescuN04'	0	2
+'conf/mobicom/RayanchuSBC11'	0	1	1	2
+'conf/mobicom/ShenGAA11'	0	1	1	2
+'conf/mobicom/ShrivastavaARBKPM09'	0	1	1	1	1	1	2
+'conf/mobicom/SubramanianNDD08'	0	1	1	2
+'conf/mobicom/WanCK02'	0	1	2
+'conf/mobicom/ZhouGSZ08'	0	1	1	2
+'conf/msr/HabayebMMBB15'	0	1	1	1	2
+'conf/msr/HellendoornDB15'	0	1	2
+'conf/msr/IbrahimBSAH10'	0	1	1	1	2
+'conf/msr/JiangA15'	0	2
+'conf/msr/JiangAG13'	0	1	2
+'conf/msr/JiangH06'	0	2
+'conf/msr/PosnettBD10'	0	1	2
+'conf/msr/PosnettHD11'	0	1	2
+'conf/msr/ReinaR12'	0	2
+'conf/msr/RoblesRSVG14'	0	1	1	1	2
+'conf/nsdi/ClarkFHHJLPW05'	0	1	1	1	1	1	1	2
+'conf/nsdi/CrowcroftKM08'	0	1	2
+'conf/nsdi/LeeWGDS13'	0	1	1	1	2
+'conf/nsdi/MahimkarDSVZ07'	0	1	1	1	2
+'conf/nsdi/PetersonS09'	0	2
+'conf/nsdi/RadhakrishnanGJKPV14'	0	1	1	1	1	2
+'conf/nsdi/ShrivastavaRBP10'	0	1	1	2
+'conf/nsdi/ThiagarajanRBMG10'	0	1	1	1	2
+'conf/nsdi/WalshS06'	0	2
+'conf/nsdi/WiederBPR12'	0	1	1	2
+'conf/nsdi/ZeldovichBM08'	0	1	2
+'conf/osdi/Boyd-WickizerCMPKMZ10'	0	1	1	1	1	1	2
+'conf/osdi/CowlingMLRS06'	0	1	1	1	2
+'conf/osdi/Kapritsos0QCAD12'	0	1	1	1	1	2
+'conf/osdi/KotsovinosMPRFHH04'	0	1	1	1	1	1	2
+'conf/osdi/MahajanSLCADW10'	0	1	1	1	1	1	2
+'conf/osdi/MuthitacharoenMGC02'	0	1	1	2
+'conf/osdi/PetrucciLM12'	0	1	2
+'conf/osdi/WilliamsRWSS08'	0	1	1	1	2
+'conf/pldi/AuslanderPCEB96'	0	1	1	1	2
+'conf/pldi/BallBGIKSSV14'	0	1	1	1	1	1	1	2
+'conf/pldi/BondCM10'	0	1	2
+'conf/pldi/FrigoLR98'	0	1	2
+'conf/pldi/GhemawatRS00'	0	1	2
+'conf/pldi/GrantPMCE99a'	0	1	1	1	2
+'conf/pldi/HuangZD13'	0	1	2
+'conf/pldi/IsradisaikulM13'	0	2
+'conf/pldi/MalacariaC08'	0	2
+'conf/pldi/SrivastavaBMS11'	0	1	1	2
+'conf/pldi/XuBQR11'	0	1	1	2
+'conf/pldi/XuR10'	0	2
+'conf/pldi/YanXR12'	0	1	2
+'conf/pldi/ZhengM08'	0	2
+'conf/podc/ChenVJ13'	0	1	2
+'conf/podc/DaumGGKN13'	0	1	1	1	2
+'conf/podc/DaumGKN12'	0	1	1	2
+'conf/podc/MaheshwariL97'	0	2
+'conf/podc/WiederBPR10'	0	1	1	2
+'conf/popl/BankLM97'	0	1	2
+'conf/popl/LiuKM06'	0	1	2
+'conf/popl/MelliesZ15'	0	2
+'conf/popl/RamakrishnanS86'	0	2
+'conf/recomb/SonnenburgRS05'	0	1	2
+'conf/ride/AnderssonDSYTY93'	0	1	1	1	1	2
+'conf/ride/ChoudhuryD02'	0	2
+'conf/ride/DogacDKOONEHAKM96'	0	1	1	1	1	1	1	1	1	1	2
+'conf/ride/GarofalakisOS98'	0	1	2
+'conf/ride/UrbanSR93'	0	1	2
+'conf/scam/SawinR06'	0	2
+'conf/scam/SawinR07'	0	2
+'conf/scam/SawinR11'	0	2
+'conf/sigcomm/AlizadehYSKMPS13'	0	1	1	1	1	1	2
+'conf/sigcomm/CampbellCHLMRR10'	0	1	1	1	1	1	2
+'conf/sigcomm/ChoFEK06'	0	1	1	2
+'conf/sigcomm/GrossglauserKT95'	0	1	2
+'conf/sigcomm/GrossglauserT97'	0	2
+'conf/sigcomm/JeyakumarAGKM14'	0	1	1	1	2
+'conf/sigcomm/KimKSLP04'	0	1	1	1	2
+'conf/sigcomm/KugaMHCN13'	0	1	1	1	2
+'conf/sigcomm/MiluzzoWC10'	0	1	2
+'conf/sigcomm/MiwaSHUMKS09'	0	1	1	1	1	1	2
+'conf/sigcomm/MondalVCDGMP11'	0	1	1	1	1	1	2
+'conf/sigcomm/NaousSMMZ09'	0	1	1	1	2
+'conf/sigcomm/VolpanoSX14'	0	1	2
+'conf/sigcomm/XieZMZGH04'	0	1	1	1	1	2
+'conf/sigcomm/YenCCYCH13'	0	1	1	1	1	2
+'conf/sigcomm/ZhaoZWX10'	0	1	1	2
+'conf/sigir/ArroyueloGMOS12'	0	1	1	1	2
+'conf/sigir/ChenYLZQ10'	0	1	1	1	2
+'conf/sigir/DominickP79'	2	1
+'conf/sigir/DumaisCCJSR03'	0	1	1	1	1	2
+'conf/sigir/GaoQXN05'	0	1	1	2
+'conf/sigir/HuangGCLCH13'	0	1	1	1	1	2
+'conf/sigir/LiDWDCZ14'	0	1	1	1	1	2
+'conf/sigir/LiDZ12'	0	1	2
+'conf/sigir/QiYHL10'	0	1	1	2
+'conf/sigir/ShenTZ05'	0	1	2
+'conf/sigir/ShenTZ05a'	0	1	2
+'conf/sigir/WangLG10'	0	1	2
+'conf/sigir/WangLWZZ15'	0	1	1	1	2
+'conf/sigir/WhiteH10'	0	2
+'conf/sigir/WhiteR12'	0	2
+'conf/sigir/YamanaKKSY98'	0	1	1	1	2
+'conf/sigir/YamanaTKKHNAKSM98'	0	1	1	1	1	1	1	1	1	2
+'conf/sigir/YoshidaIOSN10'	0	1	1	1	2
+'conf/sigmetrics/BramsonLP10'	0	1	2
+'conf/sigmetrics/LamQ11'	0	2
+'conf/sigmetrics/PiotrowskiBBGI06'	0	1	1	1	2
+'conf/sigmetrics/TschoppDG08'	0	1	2
+'conf/sigmetrics/ZhouZWYZZ13'	0	1	1	1	1	2
+'conf/sosp/ChongLMQVZZ07'	0	1	1	1	1	1	2
+'conf/sosp/ClementKLWADR09'	0	1	1	1	1	1	2
+'conf/sosp/GhemawatGL03'	0	1	2
+'conf/sosp/LiskovGGJSW91'	0	1	1	1	1	2
+'conf/sosp/LiuGVQWM09'	0	1	1	1	1	2
+'conf/sosp/LuPHMJLPZ07'	0	1	1	1	1	1	1	2
+'conf/sosp/PopaRZB11'	0	1	1	2
+'conf/sosp/SirerGGB99'	0	1	1	2
+'conf/sp/ArdenGLVAM12'	0	1	1	1	1	2
+'conf/sp/ClarksonCM08'	0	1	2
+'conf/sp/MardzielAHC14'	0	1	1	2
+'conf/sp/PopaLZ13'	0	1	2
+'conf/sp/WooL92'	0	2
+'conf/sp/ZhengCMZ03'	0	1	1	2
+'conf/spaa/AgrawalF14'	0	2
+'conf/spaa/AgrawalFLSSU14'	0	1	1	1	1	2
+'conf/spaa/AgrawalLS10'	0	1	2
+'conf/spaa/BenderFFFG13'	0	1	1	1	2
+'conf/spaa/FinemanS15'	0	2
+'conf/spaa/FrigoHLL09'	0	1	1	2
+'conf/spaa/GilbertGRZ10'	0	1	1	2
+'conf/spaa/GilbertKPPSY14'	0	1	1	1	1	2
+'conf/spaa/Ladan-MozesL08'	0	2
+'conf/spaa/Ladan-MozesLV11'	0	1	2
+'conf/spaa/LeeLSSZ13'	0	1	1	1	2
+'conf/spaa/SchardlKLLL15'	0	1	1	1	2
+'conf/ssdbm/GrochowHSBL10'	0	1	1	1	2
+'conf/ssdbm/HoweCSKKKB11'	0	1	1	1	1	1	2
+'conf/ssdbm/LuchianS92'	0	2
+'conf/ssdbm/MaierMBJST12'	0	1	1	1	1	2
+'conf/ssdbm/MeglerM11'	0	2
+'conf/ssdbm/PantelPH05'	0	1	2
+'conf/ssdbm/StamateLP94'	0	1	2
+'conf/ssdbm/YangWY04'	0	1	2
+'conf/stacs/DjidjevLS89'	0	1	2
+'conf/stacs/GeladeMS09'	0	1	2
+'conf/stacs/GeladeN08'	0	2
+'conf/stacs/LevcopoulosL84'	0	2
+'conf/stacs/WeberS05'	0	2
+'conf/swat/LevcopoulosKL88'	0	1	2
+'conf/uist/AsaiY13'	0	2
+'conf/uist/BellHF02'	0	1	2
+'conf/uist/BighamJJLMMMTWWY10'	0	1	1	1	1	1	1	1	1	1	2
+'conf/uist/GauglitzNTH14'	0	1	1	2
+'conf/uist/HenryHYMF91'	0	1	1	1	2
+'conf/uist/JonesSMMBWOMRS14'	0	1	1	1	1	1	1	1	1	2
+'conf/uist/KimKYC14'	0	1	1	2
+'conf/uist/LakshmipathySM03'	0	1	2
+'conf/uist/LaseckiLHB12'	0	1	1	2
+'conf/uist/WhiteJB10'	0	1	2
+'conf/uist/YamadaSCNHM04'	0	1	1	1	1	2
+'conf/uist/YuCCCH10'	0	1	1	1	2
+'conf/wads/AokiIIR93'	0	1	1	2
+'conf/wads/BoseD09'	0	2
+'conf/wads/HassanzadehR09'	0	2
+'conf/wcre/AggarwalRTHGS15'	0	1	1	1	1	2
+'conf/wcre/Basten0KLSSV15'	0	1	1	1	1	1	2
+'conf/wcre/El-RamlyISSM01'	0	1	1	1	2
+'conf/wcre/HassanJH05'	0	1	2
+'conf/wcre/JiangSPLZ15'	0	1	1	1	2
+'conf/wcre/LiXPZ13'	0	1	1	2
+'conf/wcre/LiZXBPGZ15'	0	1	1	1	1	1	2
+'conf/wcre/NegaraS12'	0	2
+'conf/wcre/SamirSK07'	0	1	2
+'conf/wcre/StrouliaEKSM99'	0	1	1	1	2
+'conf/wcre/TanPPZ11'	0	1	1	2
+'conf/wcre/WuHH04'	0	1	2
+'conf/wcre/XingS06'	0	2
+'conf/wcre/XingXJ13'	0	1	2
+'conf/wcre/XueXJ10'	0	1	2
+'conf/wcre/XueXJ12'	0	1	2
+'conf/wcre/YangPZ99a'	0	1	2
+'conf/wcre/ZaidmanGH06'	0	1	2
+'conf/wcre/ZhuWPXZ11'	0	1	1	1	2
+'conf/wdag/AlonADDGT10'	0	1	1	1	1	2
+'conf/wdag/ChenVJ12'	0	1	2
+'conf/wdag/DolevGGN07'	0	1	1	2
+'conf/wdag/FelberGG09'	0	1	2
+'conf/wdag/GilbertGK07'	0	1	2
+'conf/widm/Al-KamhaE04'	0	2
+'conf/www/AgrawalFKST12'	0	1	1	1	2
+'conf/www/BexGNV08'	0	1	1	2
+'conf/www/BexMNS05'	0	1	1	2
+'conf/www/BozzonBCF10'	0	1	1	2
+'conf/www/BozzonCCFMT12'	0	1	1	1	1	2
+'conf/www/CarrollDDRSW04'	0	1	1	1	1	2
+'conf/www/ChaojiRRB12'	0	1	1	2
+'conf/www/ChiZZFX09'	0	1	1	1	2
+'conf/www/DingAS10'	0	1	2
+'conf/www/DingHYS08'	0	1	1	2
+'conf/www/DingHYS09'	0	1	1	2
+'conf/www/DuanH11'	0	2
+'conf/www/FonsPPAV03'	0	1	1	1	2
+'conf/www/GrabchakBBG11'	0	1	1	2
+'conf/www/GulhaneRST10'	0	1	1	2
+'conf/www/IanniRCLG04'	0	1	1	1	2
+'conf/www/IrmakK10'	0	2
+'conf/www/IrmakMSGI06'	0	1	1	1	2
+'conf/www/IrmakS05'	0	2
+'conf/www/IrmakS06'	0	2
+'conf/www/KimPS13'	0	1	2
+'conf/www/KiyavitskayaZMM04'	0	1	1	2
+'conf/www/LeeYHCCM14'	0	1	1	1	1	2
+'conf/www/LiDZ12'	0	1	2
+'conf/www/LimantoGTZHH05'	0	1	1	1	1	2
+'conf/www/LonsdaleEL10'	0	1	2
+'conf/www/LouPCPLC13'	0	1	1	1	1	2
+'conf/www/LuCDZ11'	0	1	1	2
+'conf/www/MartensNV15'	0	1	2
+'conf/www/McDowellEGHLPVV03'	0	1	1	1	1	1	1	2
+'conf/www/McDowellEH04'	0	1	2
+'conf/www/NagarajanSAKMU07'	0	1	1	1	1	2
+'conf/www/OldhamVSH06'	0	1	1	2
+'conf/www/ReynoldsWMAV06'	0	1	1	1	2
+'conf/www/RitterWCM15'	0	1	1	2
+'conf/www/SatpalBSRS11'	0	1	1	1	2
+'conf/www/SongZZWWLW15'	0	1	1	1	1	1	2
+'conf/www/TagamiHTOTT14'	0	1	1	1	1	2
+'conf/www/TagamiKOT15'	0	1	1	2
+'conf/www/TashiroUHHY07'	0	1	1	1	2
+'conf/www/TavakolifardAG13'	0	1	2
+'conf/www/YadatiN11'	0	2
+'conf/www/Yang0GQDGS07'	0	1	1	1	1	1	2
+'conf/www/YihGC06'	0	1	2
