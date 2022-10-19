@@ -6,6 +6,8 @@ from tqdm import tqdm, trange
 import copy
 import math
 
+# code from https://github.com/ma-compbio/Hyper-SAGNN
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class SparseEmbedding(nn.Module):

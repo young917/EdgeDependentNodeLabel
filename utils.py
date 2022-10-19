@@ -142,6 +142,7 @@ def get_clf_eval(y_test, pred, avg='micro', outputdim=None):
     print('Accuracy:{}, Precision:{}, Recall:{}, F1:{}'.format(accuracy, precision, recall, f1))
     return confusion, accuracy, precision, recall, f1
 
+# code from https://github.com/ma-compbio/Hyper-SAGNN
 def walkpath2str(walk):
 	return [list(map(str, w)) for w in walk]
 

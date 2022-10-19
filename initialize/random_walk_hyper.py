@@ -6,6 +6,8 @@ import time
 import numpy as np
 import os
 
+# code from https://github.com/ma-compbio/Hyper-SAGNN
+
 # os.environ["OMP_DISPLAY_ENV"] = "FALSE"
 # os.environ["OMP_NUM_THREADS"] = "20"
 os.environ["KMP_AFFINITY"] = 'none'
