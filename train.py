@@ -191,7 +191,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             else:
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
-                v, e = embedder(blocks, v_feat, e_feat, vindex)
+                v, e = embedder(blocks, v_feat, e_feat)
         else:
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
