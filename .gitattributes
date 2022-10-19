@@ -1,1 +1,5 @@
-*.txt filter=lfs diff=lfs merge=lfs -text
+dataset/AMinerAuthor/*.txt filter=lfs diff=lfs merge=lfs -text
+dataset/DBLP/*.txt filter=lfs diff=lfs merge=lfs -text
+dataset/emailEnron/*.txt filter=lfs diff=lfs merge=lfs -text
+dataset/emailEu/*.txt filter=lfs diff=lfs merge=lfs -text
+dataset/StackOverflowPhysics/*.txt filter=lfs diff=lfs merge=lfs -text
