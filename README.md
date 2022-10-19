@@ -17,6 +17,7 @@ We provide six real-world datasets for our new benchmark task
 |__ hypergraph_pos.txt          # used for edge-dependent node labels; i-th line indicates depending on i-th hyperedge v_1's label, v_2's label, ... (same order as hypergraph.txt)
 |__ [valid/test]_hindex_0.txt   # used for splitting train/valid/test
 ```
+*Due to the large size of the dataset, only 'StackOverflowBiology' is visible now in the anonymous GitHub*
 
 (2) **Benchmark Task**
 
