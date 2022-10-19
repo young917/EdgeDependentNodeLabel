@@ -59,7 +59,7 @@ python nodecentrality.py --algo [degree,kcore,pagerank,eigenvec] --dataname [nam
 
 ### Run WHATsNET
 
-You can train/evaluate in JSD WHATsNET by
+You can train/evaluate (on JSD) WHATsNET by
 ```
 python train.py/evaluate.py --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" 
                             --embedder transformer --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ 
@@ -79,18 +79,22 @@ You can run *all* ten models for each dataset(DBLP,AMinerAuthor,emailEnron,email
 cd run
 ./run_[DBLP,AMinerAuthor,emailEnron,emailEu,StackOverflowBiology,StackOverflowPhyscis].sh
 ```
-We set hyperparameters for each model which are chosen by the best mean of Micro-FA and Macro-F1 from the search space
+We set hyperparameters of each model chosen by the best mean of Micro-F1 and Macro-F1 from the search space
 
 ### Run Downstream Tasks
 
-We provide predicted edge-dependent node labels by WHATsNET in `train_results/`
+We provide edge-dependent node labels predicted by WHATsNET in `train_results/`
 
 You can run three downstream tasks with WHATsNET by
 #### Ranking Aggregation
-In the `RankingAggregation` directory, Run `ranking_aggregation_result.ipynb`
+In the `RankingAggregation` directory, 
+
+Run `ranking_aggregation_result.ipynb`
 
 #### Clustering
-In the `Clustering` directory, Run `clustering.py`
+In the `Clustering` directory, 
+
+Run `clustering.py`
 
 #### Product Return Prediction
 In the `ProductReturnPred` directory,
