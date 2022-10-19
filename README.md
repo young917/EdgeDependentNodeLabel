@@ -59,17 +59,23 @@ python nodecentrality.py --algo [degree,kcore,pagerank,eigenvec] --dataname [nam
 
 ### Run WHATsNET
 
-You can train/evaluate (on JSD) WHATsNET by
+You can 
+
+* train WHATsNET
+* evaluate WHATsNET on JSD of node-level label dist.
+* predict edge-dependent node labels by trained WHATsNET
+
+by following below code,
 ```
-python train.py/evaluate.py --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" 
-                            --embedder transformer --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ 
-                            --dataset_name [name for dataset]
-                            --num_att_layer [number of layers in WithinATT]
-                            --num_layers [number of layers] 
-                            --bs [batch size]
-                            --lr [learning rate]
-                            --sampling [size of sampling incident hyperedges in aggregation at nodes]
-                            --scorer sm --scorer_num_layers 1 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5
+python train.py/evaluate.py/predict.py  --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" 
+                                        --embedder transformer --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ 
+                                        --dataset_name [name for dataset]
+                                        --num_att_layer [number of layers in WithinATT]
+                                        --num_layers [number of layers] 
+                                        --bs [batch size]
+                                        --lr [learning rate]
+                                        --sampling [size of sampling incident hyperedges in aggregation at nodes]
+                                        --scorer sm --scorer_num_layers 1 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5
 ```
 
 ### Run Benchmark Tasks
