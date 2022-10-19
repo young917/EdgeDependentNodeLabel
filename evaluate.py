@@ -85,7 +85,6 @@ for fname in exist_filelist:
 
 # Data -----------------------------------------------------------------------------
 data = dl.Hypergraph(args, dataset_name)
-data.split_data(args.val_ratio, args.test_ratio)
 test_data = data.get_data(2)
 full_ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)
 if args.orderflag:
@@ -99,18 +98,18 @@ except:
 
 if args.embedder == "hcha":
     test_edata, test_vdata, test_label = [], [], []
-    g = g.to(device)
     for hedge in test_data:
         for vidx, v in enumerate(data.hedge2node[hedge]):
             test_edata.append(hedge)
             test_vdata.append(v)
             test_label.append(data.hedge2nodepos[hedge][vidx])
-    test_label = torch.LongTensor(test_label).to(device)
-if args.use_gpu:
     g = g.to(device)
-    test_data = test_data.to(device)
-
-testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
+    test_label = torch.LongTensor(test_label).to(device)
+else:
+    if args.use_gpu:
+        g = g.to(device)
+        test_data = test_data.to(device)
+    testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
 
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)

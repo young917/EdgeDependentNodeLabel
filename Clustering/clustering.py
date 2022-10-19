@@ -14,15 +14,21 @@ import networkx as nx
 from hypernetx import Entity
 from pprint import pprint
 
+# code referenced from https://github.com/pnnl/HyperNetX/blob/master/tutorials/Tutorial%2011%20-%20Laplacians%20and%20Clustering.ipynb
+
 parser = argparse.ArgumentParser(description='Argparse Tutorial')
-parser.add_argument('--inputdir', type=str)
-parser.add_argument('--dataname', type=str)
-parser.add_argument('--exist_hedgename', action='store_true')
-parser.add_argument('--predict_path', type=str, default="")
+parser.add_argument('--inputdir', type=str, default="../downstreamdata/")
+parser.add_argument('--dataname', type=str, default="DBLP_cat")
+parser.add_argument('--notexist_hedgename', action='store_true')
+parser.add_argument('--predict_path', type=str, default="../train_results/DBLP_cat/")
+parser.add_argument('--n_cluster', type=int, default=4)
 args = parser.parse_args()
 
 dataname = args.dataname
-exist_hedgename = args.exist_hedgename
+if args.notexist_hedgename is False:
+    exist_hedgename = True
+else:
+    exist_hedgename = False
 numhedges = 0
 numnodes = 0
 hedgeindex = {}
@@ -88,8 +94,8 @@ if len(args.predict_path) > 0:
                 hedge2nodepos_predict[hidx].append(nodepos)
             
 # train-test split --------------------------------------------------------------------         
-input_test_name = "{}/{}/test_hindex.txt".format(args.inputdir, dataname)
-input_valid_name = "{}/{}/valid_hindex.txt".format(args.inputdir, dataname)
+input_test_name = "{}/{}/test_hindex_0.txt".format(args.inputdir, dataname)
+input_valid_name = "{}/{}/valid_hindex_0.txt".format(args.inputdir, dataname)
 valid_index = []
 test_index = []
 train_index = []
@@ -180,13 +186,13 @@ def get_cluster(weights, k, weightflag=True):
     
     return clusters
 
-gt_clusters = get_cluster(weights_from_gt, args.k, weightflag=True)
-gt_score = NMI_SCORE(hedge2cluster, true_clusters)
-predict_clusters = get_cluster(weights_from_pred, args.k, weightflag=True)
+gt_clusters = get_cluster(weights_from_gt, args.n_cluster, weightflag=True)
+gt_score = NMI_SCORE(hedge2cluster, gt_clusters)
+predict_clusters = get_cluster(weights_from_pred, args.n_cluster, weightflag=True)
 predict_score = NMI_SCORE(hedge2cluster, predict_clusters)
-nolab_clusters = get_cluster(weights_from_nolab, args.k, weightflag=False)
-nolab_score = NMI_SCORE(hedge2cluster, unif_clusters)
-rand_clusters = [np.random.randint(args.k) for h in range(numhedges)]
+nolab_clusters = get_cluster(weights_from_nolab, args.n_cluster, weightflag=False)
+nolab_score = NMI_SCORE(hedge2cluster, nolab_clusters)
+rand_clusters = [np.random.randint(args.n_cluster) for h in range(numhedges)]
 rand_score = NMI_SCORE(hedge2cluster, rand_clusters)
 
 print("Data Name", args.dataname)

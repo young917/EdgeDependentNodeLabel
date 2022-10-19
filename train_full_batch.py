@@ -21,27 +21,20 @@ from concurrent.futures import as_completed
 from concurrent.futures import ProcessPoolExecutor
 from scipy.sparse import csr_matrix, lil_matrix, csc_matrix
 
-from preprocess.data_load import gen_DGLGraph, gen_weighted_DGLGraph, gen_sampleweighted_DGLGraph
-from preprocess.data_load import CustomMultiLayerNeighborSampler
+from preprocess.data_load import gen_DGLGraph, gen_weighted_DGLGraph
 import preprocess.data_load as dl
 from preprocess.batch import DataLoader, DataLoaderwRank
 from initialize.initial_embedder import MultipleEmbedding
 from initialize.random_walk_hyper import random_walk_hyper
 
-from model.HNHN import HNHN
-from model.HGNN import HGNN
-from model.GAT import GAT
-from model.HAT import HyperAttn
-from model.UniGCN import UniGCNII
 from model.HCHA import HCHA
-from model.Transformer import Transformer, TransformerLayer
-from model.layer import FC, ScorerTransformer, Wrap_Embedding
-from model.RNN import ScorerGRU
+from model.layer import FC, Wrap_Embedding
 
 
 # Make Output Directory --------------------------------------------------------------------
 initialization = "rw"
 args = utils.parse_args()
+args.bs = -1
 
 assert args.embedder == "hcha"
 assert args.scorer == "sm"
@@ -87,85 +80,7 @@ plot_epoch = args.epochs
 patience = 0
 best_eval_acc = 0
 
-# Check Exist -----------------------------------------------------------------------
-# Check Exist -----------------------------------------------------------------------
-existflag = False
-run_only_test = False
-if args.recalculate is False:
-    if os.path.isfile(outputdir + "log_valid_micro.txt"):
-        max_acc = 0
-        cur_patience = 0
-        epoch = 0
-        with open(outputdir + "log_valid_micro.txt", "r") as f:
-            for line in f.readlines():
-                ep_str = line.rstrip().split(":")[0].split(" ")[0]
-                acc_str = line.rstrip().split(":")[-1]
-                epoch = int(ep_str)
-                if max_acc < float(acc_str):
-                    cur_patience = 0
-                    max_acc = float(acc_str)
-                else:
-                    cur_patience += 1
-                if cur_patience > args.patience:
-                    break
-        if cur_patience > args.patience or epoch == args.epochs:
-            existflag = True
-        
-        if args.evaltype == "test":
-            if os.path.isfile(outputdir + "log_test_micro.txt") is False:
-                if os.path.isfile(outputdir + "initembedder.pt") is False:
-                    existflag = False
-                elif os.path.isfile(outputdir + "embedder.pt") is False:
-                    existflag = False
-                elif os.path.isfile(outputdir + "scorer.pt") is False:
-                    existflag = False
-                else:
-                    run_only_test = True
-            elif os.path.isfile(outputdir + "evaluation.txt") is False:
-                if os.path.isfile(outputdir + "initembedder.pt") is False:
-                    existflag = False
-                elif os.path.isfile(outputdir + "embedder.pt") is False:
-                    existflag = False
-                elif os.path.isfile(outputdir + "scorer.pt") is False:
-                    existflag = False
-                else:
-                    run_only_test = True
-        if existflag and (run_only_test is False):
-            sys.exit("Already Run by log valid micro txt")
-    elif args.evaltype == "valid" and os.path.isfile(outputdir + "log_test_micro.txt"):
-        max_acc = 0
-        cur_patience = 0
-        epoch = 0
-        with open(outputdir + "log_test_micro.txt", "r") as f:
-            for line in f.readlines():
-                ep_str = line.rstrip().split(":")[0].split(" ")[0]
-                acc_str = line.rstrip().split(":")[-1]
-                epoch = int(ep_str)
-                if max_acc < float(acc_str):
-                    cur_patience = 0
-                    max_acc = float(acc_str)
-                else:
-                    cur_patience += 1
-                if cur_patience > args.patience:
-                    break
-        if cur_patience > args.patience or epoch == args.epochs:
-            existflag = True
-        if existflag:
-            sys.exit("Already Run by log test micro txt")
-            
-if args.check:
-    with open("./run/notyet.txt", "+a") as f:
-        f.write(outputdir + "\n")
-    sys.exit("**Not Yet**")
-
-if run_only_test:
-    if os.path.isfile(outputdir + "log_test_micro.txt"):
-        os.remove(outputdir + "log_test_micro.txt")
-    if os.path.isfile(outputdir + "log_test_confusion.txt"):
-        os.remove(outputdir + "log_test_confusion.txt")
-    if os.path.isfile(outputdir + "log_test_macro.txt"):
-        os.remove(outputdir + "log_test_macro.txt")
-elif os.path.isfile(outputdir + "checkpoint.pt"):
+if os.path.isfile(outputdir + "checkpoint.pt"):
     print("Start from checkpoint")
 else:
     if os.path.isfile(outputdir + "log_train.txt"):
@@ -186,7 +101,6 @@ else:
 # Data -----------------------------------------------------------------------------
 # Revised
 data = dl.Hypergraph(args, dataset_name)
-data.split_data(args.val_ratio, args.test_ratio)
 train_data = data.get_data(0)
 valid_data = data.get_data(1)
 test_data = data.get_data(2)
@@ -249,17 +163,12 @@ else:
     print("load exist init walks")
     A = np.load(savefname)
 A = StandardScaler().fit_transform(A)
-# A = np.concatenate(
-#     (np.zeros((1, A.shape[-1]), dtype='float32'), A), axis=0)
 A = A.astype('float32')
 A = torch.tensor(A).to(device)
 initembedder = Wrap_Embedding(data.numnodes, args.input_vdim, scale_grad_by_freq=False, padding_idx=0, sparse=False)
 initembedder.weight = nn.Parameter(A)
-# Randomwalk_Word2vec = Word2vec_Skipgram(dict_size=int(data.numnodes + 1), embedding_dim=48,
-#                                         window_size=10, u_embedding=node_embedding,
-#                                         sparse=False).to(device)
-
 print("Model:", args.embedder)
+
 # model init - Only HCHA
 embedder = HCHA(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, num_heads=args.num_heads, feat_drop=args.dropout).to(device)
 
@@ -283,11 +192,10 @@ train_acc=0
 print(A.shape)
 print(data.numnodes)
 nodes = torch.LongTensor(range(data.numnodes)).to(device)
-for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'): # tqdm
+for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'):
     # Training stage
     embedder.train()
     scorer.train()
-    # print(torch.LongTensor(range(data.numnodes - 1)))
     v_feat, recon_loss = initembedder(nodes)
     e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
     DV2 = data.DV2.to(device)
@@ -304,7 +212,7 @@ for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'): # tqdm
     train_ce_loss = loss_fn(predictions, train_label)
     train_loss = train_ce_loss + args.rw * recon_loss
     optim.zero_grad()
-    train_loss.backward() # retain_graph=True
+    train_loss.backward()
     optim.step()
     scheduler.step()
     torch.cuda.empty_cache()

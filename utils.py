@@ -35,7 +35,7 @@ def parse_args():
 
     # data parameter
     parser.add_argument('--inputdir', default='dataset/', type=str)
-    parser.add_argument('--dataset_name', default='DBLP2', type=str)
+    parser.add_argument('--dataset_name', default='DBLP', type=str)
     parser.add_argument('--exist_hedgename', action='store_true')
     parser.add_argument('--use_gpu', action='store_true')
     parser.add_argument('--k', default=10000, type=int)
@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument('--valid_inputname', default='valid_hindex', type=str)
     parser.add_argument('--test_inputname', default='test_hindex', type=str)
     #     feature
-    parser.add_argument('--binning', default=0, type=int # downstream data
+    parser.add_argument('--binning', default=0, type=int) # downstream data
     # random walk from Hyper-SAGNN
     parser.add_argument('-l', '--walk-length', type=int, default=40, help='Length of walk per source')
     parser.add_argument('-r', '--num-walks', type=int, default=10, help='Number of walks per source')

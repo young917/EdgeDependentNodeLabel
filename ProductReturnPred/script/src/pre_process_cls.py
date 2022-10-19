@@ -26,7 +26,7 @@ class SplitTrainValidateTest:
             with open(src_folder + "r_unif_mat.pkl", 'rb') as f:
                 self.r = pickle.load(f)
         elif self.model_flag:
-            with open(src_folder + "h_WHATsNET_mat.pkl", 'rb') as f:
+            with open(src_folder + "h_WHATsNet_mat.pkl", 'rb') as f:
                 self.h = pickle.load(f)
 
             with open(src_folder + "r_mat.pkl", 'rb') as f:
@@ -39,11 +39,14 @@ class SplitTrainValidateTest:
                 self.r = pickle.load(f)
                 
         self.bsk_label = pd.DataFrame(self.r.sum(axis=1)>0, index=self.order_no, columns=['RET_Items'])
-        with open(src_folder + "h_mat.pkl", 'rb') as f:
-            h_nunif = pickle.load(f)
-        with open(src_folder + "r_mat.pkl", 'rb') as f:
-            r_nunif = pickle.load(f)
-        self.return_rate = pd.DataFrame(((r_nunif.sum(axis=0)+1)/(h_nunif.sum(axis=0)+1)).T, index=self.khk_ean, columns=['RET_Items'])
+        if self.unif_flag:
+            with open(src_folder + "h_mat.pkl", 'rb') as f:
+                h_nunif = pickle.load(f)
+            with open(src_folder + "r_mat.pkl", 'rb') as f:
+                r_nunif = pickle.load(f)
+            self.return_rate = pd.DataFrame(((r_nunif.sum(axis=0)+1)/(h_nunif.sum(axis=0)+1)).T, index=self.khk_ean, columns=['RET_Items'])
+        else:
+            self.return_rate = pd.DataFrame(((self.r.sum(axis=0)+1)/(self.h.sum(axis=0)+1)).T, index=self.khk_ean, columns=['RET_Items'])
             
     def random_split(self, seed = 1):
         return_rate = self.return_rate.loc[self.khk_ean, :]

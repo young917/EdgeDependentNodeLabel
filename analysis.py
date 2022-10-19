@@ -97,7 +97,6 @@ if args.fix_seed:
 
 # Data -----------------------------------------------------------------------------
 data = dl.Hypergraph(args, dataset_name)
-data.split_data(args.val_ratio, args.test_ratio)
 target_data = data.get_data(2)
 
 ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)

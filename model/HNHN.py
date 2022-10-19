@@ -10,10 +10,10 @@ class HNHNLayer(nn.Module):
                  input_vdim, 
                  input_edim, 
                  vertex_dim, 
-                 edge_dim, 
-                 use_efeat=False,
+                 edge_dim,
                  dropout=0.5, 
-                 activation=F.relu):
+                 activation=F.relu, 
+                 use_efeat=False):
         super(HNHNLayer, self).__init__()
         
         self.use_efeat = use_efeat
@@ -90,10 +90,10 @@ class HNHN(nn.Module):
                  input_edim, 
                  hidden_dim, 
                  output_vdim, 
-                 output_edim, 
-                 use_efeat=False,
+                 output_edim,
                  num_layer=2, 
                  dropout=0.5, 
+                 use_efeat=False, 
                  device='0'):
                     
         super(HNHN, self).__init__()

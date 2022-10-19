@@ -131,6 +131,10 @@ class Hypergraph:
         for vhedges in self.node2hedge:
             if self.max_len < len(vhedges):
                 self.max_len = len(vhedges)
+        self.v_feat = torch.tensor(self.v_feat).type('torch.FloatTensor')
+        for h in range(len(self.e_feat)):
+            self.e_feat[h] = [0 for _ in range(args.dim_edge)]
+        self.e_feat = torch.tensor(self.e_feat).type('torch.FloatTensor')
         
         # Split Data ------------------------------------------------------------------------
         self.test_index = []
@@ -140,8 +144,8 @@ class Hypergraph:
         self.trainsize = 0
         self.hedge2type = torch.zeros(self.numhedges)
         
-        assert os.path.isfile(self.inputdir + self.dataname + "/" + self.valid_inputname + ".txt")
-        with open(self.inputdir + self.dataname + "/" + self.valid_inputname + ".txt", "r") as f:
+        assert os.path.isfile(self.inputdir + self.dataname + "/" + self.valid_inputname + "_" + str(self.k) + ".txt")
+        with open(self.inputdir + self.dataname + "/" + self.valid_inputname + "_" + str(self.k) + ".txt", "r") as f:
             for line in f.readlines():
                 name = line.rstrip()
                 if self.exist_hedgename is False:
@@ -150,8 +154,8 @@ class Hypergraph:
                 self.valid_index.append(index)
             self.hedge2type[self.valid_index] = 1
             self.validsize = len(self.valid_index)
-        if os.path.isfile(self.inputdir + self.dataname + "/" + self.test_inputname + ".txt"):
-            with open(self.inputdir + self.dataname + "/" + self.test_inputname + ".txt", "r") as f:
+        if os.path.isfile(self.inputdir + self.dataname + "/" + self.test_inputname + "_" + str(self.k) + ".txt"):
+            with open(self.inputdir + self.dataname + "/" + self.test_inputname + "_" + str(self.k) + ".txt", "r") as f:
                 for line in f.readlines():
                     name = line.rstrip()
                     if self.exist_hedgename is False:
@@ -165,7 +169,7 @@ class Hypergraph:
         
         # extract target ---------------------------------------------------------
         print("Extract labels")
-        with open("rankingdata/" + self.dataname + "/hypergraph_pos.txt", "r") as f:
+        with open(self.inputdir + self.dataname + "/hypergraph_pos.txt", "r") as f:
             for _hidx, line in enumerate(f.readlines()):
                 tmp = line.split("\t")
                 if self.exist_hedgename:
@@ -292,13 +296,13 @@ class Hypergraph:
             deg = list(_deg.flat)
             deg = np.array(deg)
             print("Adj is prepared")
-            if args.pe in ["KD", "KPRW"]:
+            if args.pe in ["DK", "PRWK"]:
                 # sorting hedge2node, hedge2nodepos
                 for hidx in range(self.numhedges):
                     sorted_idx = np.argsort(np.array(self.hedge2node[hidx]))
                     self.hedge2node[hidx] = np.array(self.hedge2node[hidx])[sorted_idx].tolist()
                     self.hedge2nodepos[hidx] = np.array(self.hedge2nodepos[hidx])[sorted_idx].tolist()
-                if args.pe == "KD":
+                if args.pe == "DK":
                     L = sp.diags(deg, dtype=float) - A # No Normalize
                     beta = 1.0
                     L = -beta * L
@@ -329,7 +333,7 @@ class Hypergraph:
                                     print(self.hedge2nodePE[hidx][vorder])
                                 assert _pe >= 0
                     
-                elif args.pe == "KPRW":
+                elif args.pe == "PRWK":
                     L = sp.diags(deg, dtype=float) - A # No Normalize
                     print("L is prepared")
                     gamma, p = 0.5, 2

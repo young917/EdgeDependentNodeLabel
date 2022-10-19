@@ -6,7 +6,7 @@ import pdb
 import math
 import os
 # Based on SetTransformer
-from model.Transformer import MAB, SAB, ISAB, PMA, IMAB
+from model.Transformer import MAB, SAB, ISAB, PMA
 
 class TransformerHATLayer(nn.Module):
     def __init__(self, 

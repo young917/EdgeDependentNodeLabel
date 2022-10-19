@@ -68,7 +68,6 @@ if args.fix_seed:
     
 # Data -----------------------------------------------------------------------------
 data = dl.Hypergraph(args, args.dataset_name)
-data.split_data(args.val_ratio, args.test_ratio)
 train_data = data.get_data(0)
 if args.evaltype == "test":
     target_data = data.get_data(2)

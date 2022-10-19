@@ -278,7 +278,6 @@ else:
             
 # Data -----------------------------------------------------------------------------
 data = dl.Hypergraph(args, dataset_name)
-data.split_data(args.val_ratio, args.test_ratio)
 train_data = data.get_data(0)
 valid_data = data.get_data(1)
 if args.evaltype == "test":
@@ -351,22 +350,18 @@ initembedder.weight = nn.Parameter(A)
 print("Model:", args.embedder)
 # model init
 if args.embedder == "hnhn":
-    embedder = HNHN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.use_efeat, args.num_layers, args.dropout).to(device)
+    embedder = HNHN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hgnn":
     embedder = HGNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hat":
-    if args.encode_type == "":
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
-    else:
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.order_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
+    embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
 elif args.embedder == "transformer":    
     input_vdim = args.input_vdim
-    pos_dim = 0
     pe_ablation_flag = args.pe_ablation
     embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, pos_dim=pos_dim,
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
                            num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
 elif args.embedder == "transformerHAT":
@@ -409,10 +404,7 @@ train_acc=0
 patience = 0
 best_eval_acc = 0
 epoch_start = 1
-if run_only_test:
-    print("Run only test")
-    epoch_start = args.epochs + 1
-elif os.path.isfile(outputdir + "checkpoint.pt") and args.recalculate is False:
+if os.path.isfile(outputdir + "checkpoint.pt") and args.recalculate is False:
     checkpoint = torch.load(outputdir + "checkpoint.pt") #, map_location=device)
     epoch_start = checkpoint['epoch'] + 1
     initembedder.load_state_dict(checkpoint['initembedder'])
