@@ -155,7 +155,7 @@ initembedder.weight = nn.Parameter(A)
 print("Model:", args.embedder)
 # model init
 if args.embedder == "hnhn":
-    embedder = HNHN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.use_efeat, args.num_layers, args.dropout).to(device)
+    embedder = HNHN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hgnn":
     embedder = HGNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hat":
