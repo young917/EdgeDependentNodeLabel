@@ -159,19 +159,15 @@ if args.embedder == "hnhn":
 elif args.embedder == "hgnn":
     embedder = HGNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hat":
-    if args.encode_type == "":
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
-    else:
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.order_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
+    embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
 elif args.embedder == "hcha":
     embedder = HCHA(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, num_heads=args.num_heads, feat_drop=args.dropout).to(device)
 elif args.embedder == "transformer":    
     input_vdim = args.input_vdim
-    pos_dim = 0
     embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, pos_dim=pos_dim,
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
 
