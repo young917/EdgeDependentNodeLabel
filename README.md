@@ -4,7 +4,7 @@ We provide (1) benchmark datasets and source code for (2) benchmark task, (3) do
 
 (1) **Benchmark Datasets**
 
-We provide six real-world datasets for our new benchmark task(```/dataset/```) and preprocessing code (```/dataset/PreprocessCode```)
+We provide six real-world datasets for our new benchmark task(```/dataset/```) and preprocessing code (```/dataset/PreprocessCode/```)
 
 * Co-authorship : DBLP and AMinerAuthor
 * Email : Enron and Eu
