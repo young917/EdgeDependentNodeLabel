@@ -8,11 +8,15 @@ import os
 from src.pre_process_cls import SplitTrainValidateTest
 from src.hg_prediction_2_step_cls import HypergraphPredictor
 from src.hg_prediction_2_step_cls_unif import HypergraphPredictor as HypergraphPredictorUnif
+
+from src.baseline_prediction_2_step_cls import BaseLinePredictor
+from src.knn_prediction_2_step_cls import knn_Predictor
 from itertools import compress
 
 parser = argparse.ArgumentParser(description='Argparse Tutorial')
 parser.add_argument('--model_flag', action='store_true', help="Run Hypergraph w/ WHATsNet")
 parser.add_argument('--unif_flag', action='store_true', help="Run Hypergraph w/o Labels")
+parser.add_argument('--baseline', action='store_true', help="Run Baselines")
 args = parser.parse_args()
 
 config = "GroundTruth"
@@ -20,6 +24,8 @@ if args.unif_flag:
     config = "NoLabel"
 elif args.model_flag:
     config = "WHATsNET"
+elif args.baseline:
+    config = "Baseline"
 input_path = '../data/'
 output_path = '../data/split'
 result_path = '../rst/' + config
@@ -83,20 +89,47 @@ for sd in seeds:
         order_no_test = [order_no_test[i] for i in idx]
         r_test = r_test[idx, :]
         bsk_label_test = bsk_label_test.iloc[idx,:]
+    
+    if args.baseline:
+        # Unnormalized base line =============================
+        p = BaseLinePredictor()
+        p.fit(h_train, r_train, bsk_label_train, step=step)
+        prec, rec, _, _, _, _, thr = \
+            p.pred_test_based_on_valid_prod(h_validate, bsk_label_validate, r_validate, h_test, bsk_label_test, r_test)
+        with open(result_path + "/baseline.csv", 'a+') as ff:
+            ff.write("%f, %f, %f, %f\n" % (sd, thr, prec, rec))
 
-    # hyper graph ====================================
-    if args.unif_flag:
-        p = HypergraphPredictorUnif(max_num_test=1000, parallel="Single", n_cpu=15, chunk_size=1)
-    else:
-        p = HypergraphPredictor(max_num_test=1000, parallel="Single", n_cpu=15, chunk_size=1) # "Multi"
-    p.fit(h_train, bsk_label_train, order_no_train, khk_ean_train,
-          return_rate_train, r_train, ratio=None, step=step)
-    prec, _, _, _, _, _, _, _, _ = \
-        p.pred_test_based_on_valid_prod(h_validate, bsk_label_validate, order_no_validate, r_validate,
-                                   h_test, bsk_label_test, order_no_test, r_test,
-                                   [6, 7, 8, 9, 10],
-                                   [0.8, 0.6, 0.4])
-    with open(result_path + "/hypergraph.csv", 'a+') as ff:
-        ff.write("%f, %f\n" % (sd, prec))
+        # Normalized based line ================================
+        p = BaseLinePredictor(type="Normalized")
+        p.fit(h_train, r_train, bsk_label_train, ratio=None, step=step)
+        prec, rec, _, _, _, _, thr = \
+            p.pred_test_based_on_valid_prod(h_validate, bsk_label_validate, r_validate, h_test, bsk_label_test, r_test)
+        with open(result_path + "/baseline_norm.csv", 'a+') as ff:
+            ff.write("%f, %f, %f, %f\n" % (sd, thr, prec, rec))
+
+        # k-nn ================================================
+        p = knn_Predictor(k=5)
+        p.fit(h_train, bsk_label_train, r_train, step=step)
+        prec, rec, _, _, _, _, thr, k = \
+            p.pred_test_based_on_valid_prod(h_validate, bsk_label_validate, r_validate,
+                                            h_test, bsk_label_test, r_test,
+                                            [10, 15, 20, 25])
+        with open(result_path + "/knn.csv", 'a+') as ff:
+            ff.write("%f, %f, %f, %f\n" % (sd, thr, prec, rec))
+    else:        
+        # hyper graph ====================================
+        if args.unif_flag:
+            p = HypergraphPredictorUnif(max_num_test=1000, parallel="Single", n_cpu=15, chunk_size=1)
+        else:
+            p = HypergraphPredictor(max_num_test=1000, parallel="Single", n_cpu=15, chunk_size=1) # "Multi"
+        p.fit(h_train, bsk_label_train, order_no_train, khk_ean_train,
+              return_rate_train, r_train, ratio=None, step=step)
+        prec, rec, _, _, _, _, _, _, _ = \
+            p.pred_test_based_on_valid_prod(h_validate, bsk_label_validate, order_no_validate, r_validate,
+                                       h_test, bsk_label_test, order_no_test, r_test,
+                                       [6, 7, 8, 9, 10],
+                                       [0.8, 0.6, 0.4])
+        with open(result_path + "/hypergraph.csv", 'a+') as ff:
+            ff.write("%f, %f\n" % (sd, prec, rec))
 
 
