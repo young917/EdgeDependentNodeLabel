@@ -91,7 +91,7 @@ We set hyperparameters of each model chosen by the best mean of Micro-F1 and Mac
 
 We provide edge-dependent node labels predicted by WHATsNET in `train_results/`
 
-You can run three downstream tasks with WHATsNET by
+You can run three downstream tasks with WHATsNET and baselines by
 #### Ranking Aggregation
 In the `RankingAggregation` directory, 
 
@@ -100,7 +100,7 @@ Run `ranking_aggregation_result.ipynb`
 #### Clustering
 In the `Clustering` directory, 
 
-Run `clustering.py`
+Run `clustering.py` and `clustering-baseline.py`
 
 #### Product Return Prediction
 In the `ProductReturnPred` directory,
@@ -115,6 +115,7 @@ Then evaluate on downstreamtask,
 python main_prod.py               # get result of Hypergraph w/ GroundTruth
 python main_prod.py --model_flag  # get result of Hypergraph w/ WHATsNET
 python main_prod.py --unif_flag   # get result of Hypergraph w/o Labels
+python main_prod.py --baseline    # get result of baselines (k-means, jaccard)
 ```
 
 ### Run Ablation Studies
