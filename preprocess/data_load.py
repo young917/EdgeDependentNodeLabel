@@ -365,44 +365,55 @@ class Hypergraph:
                 hedgedeg.append(len(nodes))
             self.DV2 = torch.pow(torch.FloatTensor(nodedeg), -0.5)
             self.invDE = torch.pow(torch.FloatTensor(hedgedeg),-1)
+            if self.use_gpu:
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                self.DV2 = self.DV2.to(device)
+                self.invDE = self.invDE.to(device)
         # applying alpha and beta in HNHN ---------------------------------------------------------
-        print("weight")
-        e_weight = []
-        v_weight = []
-        for neighbor_hedges in self.node2hedge:
-            v_weight.append(len(neighbor_hedges))
-        for hedge in self.hedge2node:
-            e_weight.append(len(hedge))
-        use_exp_wt = args.use_exp_wt
-        e_reg_weight = torch.zeros(self.numhedges)
-        v_reg_weight = torch.zeros(self.numnodes)
-        for hidx in range(self.numhedges):
-            e_wt = e_weight[hidx]
-            e_reg_wt = torch.exp(args.alpha_e*e_wt) if use_exp_wt else e_wt**args.alpha_e 
-            e_reg_weight[hidx] = e_reg_wt
-        for vidx in range(self.numnodes):
-            v_wt = v_weight[vidx]
-            v_reg_wt = torch.exp(args.alpha_v*v_wt) if use_exp_wt else v_wt**args.alpha_v
-            v_reg_weight[vidx] = v_reg_wt
-        v_reg_sum = torch.zeros(self.numnodes) # <- e_reg_weight2v_sum
-        e_reg_sum = torch.zeros(self.numhedges) # <- v_reg_weight2e_sum
-        for hidx, hedges in enumerate(self.hedge2node):
-            for vidx in hedges:
-                v_reg_sum[vidx] += e_reg_wt
-                e_reg_sum[hidx] += v_reg_wt  
-        e_reg_sum[e_reg_sum==0] = 1
-        v_reg_sum[v_reg_sum==0] = 1
-        self.e_reg_weight = torch.Tensor(e_reg_weight).unsqueeze(-1)
-        self.v_reg_sum = torch.Tensor(v_reg_sum).unsqueeze(-1)
-        self.v_reg_weight = torch.Tensor(v_reg_weight).unsqueeze(-1)
-        self.e_reg_sum = torch.Tensor(e_reg_sum).unsqueeze(-1)
-        # check
-        for hidx, hedges in enumerate(self.hedge2node):
-            e_reg_sum = self.e_reg_sum[hidx]
-            v_reg_sum = 0
-            for vidx in hedges:
-                v_reg_sum += self.v_reg_weight[vidx]
-            assert abs(e_reg_sum - v_reg_sum) < 1e-4
+        if args.embedder == "hnhn" or args.embedder == "transformerHNHN":
+            print("weight")
+            e_weight = []
+            v_weight = []
+            for neighbor_hedges in self.node2hedge:
+                v_weight.append(len(neighbor_hedges))
+            for hedge in self.hedge2node:
+                e_weight.append(len(hedge))
+            use_exp_wt = args.use_exp_wt
+            e_reg_weight = torch.zeros(self.numhedges)
+            v_reg_weight = torch.zeros(self.numnodes)
+            for hidx in range(self.numhedges):
+                e_wt = e_weight[hidx]
+                e_reg_wt = torch.exp(args.alpha_e*e_wt) if use_exp_wt else e_wt**args.alpha_e 
+                e_reg_weight[hidx] = e_reg_wt
+            for vidx in range(self.numnodes):
+                v_wt = v_weight[vidx]
+                v_reg_wt = torch.exp(args.alpha_v*v_wt) if use_exp_wt else v_wt**args.alpha_v
+                v_reg_weight[vidx] = v_reg_wt
+            v_reg_sum = torch.zeros(self.numnodes) # <- e_reg_weight2v_sum
+            e_reg_sum = torch.zeros(self.numhedges) # <- v_reg_weight2e_sum
+            for hidx, hedges in enumerate(self.hedge2node):
+                for vidx in hedges:
+                    v_reg_sum[vidx] += e_reg_wt
+                    e_reg_sum[hidx] += v_reg_wt  
+            e_reg_sum[e_reg_sum==0] = 1
+            v_reg_sum[v_reg_sum==0] = 1
+            self.e_reg_weight = torch.Tensor(e_reg_weight).unsqueeze(-1)
+            self.v_reg_sum = torch.Tensor(v_reg_sum).unsqueeze(-1)
+            self.v_reg_weight = torch.Tensor(v_reg_weight).unsqueeze(-1)
+            self.e_reg_sum = torch.Tensor(e_reg_sum).unsqueeze(-1)
+            # check
+            for hidx, hedges in enumerate(self.hedge2node):
+                e_reg_sum = self.e_reg_sum[hidx]
+                v_reg_sum = 0
+                for vidx in hedges:
+                    v_reg_sum += self.v_reg_weight[vidx]
+                assert abs(e_reg_sum - v_reg_sum) < 1e-4
+            if self.use_gpu:
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                self.e_reg_weight = self.e_reg_weight.to(device)
+                self.v_reg_sum = self.v_reg_sum.to(device)
+                self.v_reg_weight = self.v_reg_weight.to(device)
+                self.e_reg_sum = self.e_reg_sum.to(device)
         # UniGCNII ----------------------------------------------------------------------------------
         if args.embedder == "unigcnii":
             degV = []
@@ -416,6 +427,10 @@ class Hypergraph:
                 degE.append(avgdeg)
             self.degV = torch.Tensor(degV).pow(-0.5).unsqueeze(-1)
             self.degE = torch.Tensor(degE).pow(-0.5).unsqueeze(-1)
+            if self.use_gpu:
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                self.degV = self.degV.to(device)
+                self.degE = self.degE.to(device)
 
     def get_data(self, type=0):
         hedgelist = ((self.hedge2type == type).nonzero(as_tuple=True)[0])
