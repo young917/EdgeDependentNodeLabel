@@ -234,6 +234,7 @@ print("OutputDir = " + outputdir)
 
 # Initialization --------------------------------------------------------------------
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(device)
 dataset_name = args.dataset_name #'citeseer' 'cora'
 
 if args.fix_seed:
@@ -300,6 +301,7 @@ if args.use_gpu:
     valid_data = valid_data.to(device)
     if args.evaltype == "test":
         test_data = test_data.to(device)
+    data.e_feat = data.e_feat.to(device)
 dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": train_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False) # , num_workers=4
 validdataloader = dgl.dataloading.NodeDataLoader( g, {"edge": valid_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False)
 if args.evaltype == "test":
@@ -361,7 +363,7 @@ elif args.embedder == "transformer":
     input_vdim = args.input_vdim
     pe_ablation_flag = args.pe_ablation
     embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers,
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
                            num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
 elif args.embedder == "transformerHAT":

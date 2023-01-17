@@ -125,6 +125,10 @@ def parse_args():
         args.param_name += "_pe_whole"
     elif args.pe_ablation and args.att_type_v == "OrderPE":
         args.param_name += "_pe_sab"
+        
+    if len(args.vorder_input) == 1:
+        tmp = args.vorder_input[0].split("_")[0]
+        args.param_name += "_vo_{}".format(tmp)
     # ---------------------------------------------------------------------------------------------------
     return args
 

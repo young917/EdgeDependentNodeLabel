@@ -85,7 +85,7 @@ dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": hedge_data}, fullsample
 
 # init embedder
 args.input_vdim = 48
-if args.rankflag:
+if args.orderflag:
     args.input_vdim = 44
 args.input_edim = data.e_feat.size(1)
 savefname = "../%s_%d_wv_%d_%s.npy" % (args.dataset_name, args.k, args.input_vdim, args.walk)
@@ -132,16 +132,15 @@ elif args.embedder == "hat":
     if args.encode_type == "":
         embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
     else:
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.rank_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
+        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.order_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
 elif args.embedder == "transformer":    
     input_vdim = args.input_vdim
-    pos_dim = 0
     embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.rank_dim, num_heads=args.num_heads, num_layers=args.num_layers, pos_dim=pos_dim,
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
-                           num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
+                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=args.pe_ablation).to(device)
 elif args.embedder == "transformerHAT":
     input_vdim = args.input_vdim
     embedder = TransformerHAT(TransformerHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
@@ -261,7 +260,10 @@ with torch.no_grad():
             for vorder in range(len(data.hedge2node[h])):
                 if data.hedge2node[h][vorder] == v:
                     assert vlab == data.hedge2nodepos[h][vorder]
-            allpredictions[h][v] = data.binindex[int(vpred)]
+            if args.binning > 0:
+                allpredictions[h][v] = data.binindex[int(vpred)]
+            else:
+                allpredictions[h][v] = int(vpred)
         num_data += predictions.shape[0]
         
     total_label = torch.cat(total_label, dim=0)
@@ -286,6 +288,13 @@ with torch.no_grad():
         f.write("Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(accuracy,precision,recall,f1))
         
     with open(outputdir + "prediction.txt", "w") as f:
+        for h in range(data.numhedges):
+            line = []
+            for v in data.hedge2node[h]:
+                line.append(str(allpredictions[h][v]))
+            f.write("\t".join(line) + "\n")
+            
+    with open("train_results/{}/prediction.txt".format(args.dataset_name), "w") as f:
         for h in range(data.numhedges):
             line = []
             for v in data.hedge2node[h]:
