@@ -67,6 +67,7 @@ def parse_args():
     
     # model parameter
     parser.add_argument('--num_layers', default=1, type=int)
+    parser.add_argument('--psi_num_layers', default=1, type=int)
     parser.add_argument('--num_heads', default=4, type=int)
     parser.add_argument('--num_inds', default=4, type=int)
     parser.add_argument('--embedder', default='hnhn', type=str)
@@ -114,8 +115,10 @@ def parse_args():
     args.scorer_name = "{}_snl{}".format(args.scorer, args.scorer_num_layers)
     args.model_name = args.embedder_name + "_" + args.scorer_name
     
-    if args.embedder == "hcha":
+    if args.embedder == "hcha" or args.embedder == "hnn":
         args.param_name = "hd_{}_od_{}_do_{}_lr_{}_ni_{}_sp_{}".format(args.dim_hidden, args.dim_edge, args.dropout, args.lr, args.num_inds, args.sampling)
+    elif args.embedder == "hnn":
+        args.param_name = "hd_{}_od_{}_do_{}_lr_{}_psi_{}".format(args.dim_hidden, args.dim_edge, args.dropout, args.lr, args.psi_num_layers)
     else:
         args.param_name = "hd_{}_od_{}_bs_{}_lr_{}_ni_{}_sp_{}".format(args.dim_hidden, args.dim_edge, args.bs, args.lr, args.num_inds, args.sampling)
         
