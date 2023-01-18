@@ -16,7 +16,7 @@ from tqdm import tqdm, trange
 import scipy.sparse as sp
 import hashlib
 from scipy.sparse.linalg import expm
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, diags
 
 def make_order(ls):
     a = np.array(ls)
@@ -355,7 +355,49 @@ class Hypergraph:
                                 assert _pe >= 0
                 self.weight_flag = True
         
-        # For HGNN ----------------------------------------------------------------------------------
+        # For HNN ----------------------------------------------------------------------------------
+        if args.embedder == "hnn":
+            print("Extract matrices for HNN")
+            nodedeg = []
+            hedgedeg = []
+            for hedges in self.node2hedge:
+                nodedeg.append(len(hedges))
+            for nodes in self.hedge2node:
+                hedgedeg.append(len(nodes))
+            self.invDV = torch.pow(torch.FloatTensor(nodedeg), -1)
+            self.invDE = torch.pow(torch.FloatTensor(hedgedeg),-1)
+            # calculating PE DE^{-1} := emat, P D^{-1} := vmat
+            # P = H DE^{-1} H^{T} D^{-T}, PE = H^{T} D^{-T} H DE^{-1}
+            DE = sp.diags([d**(-1) for d in hedgedeg], dtype=np.float32)
+            D = sp.diags([d**(-1) for d in nodedeg], dtype=np.float32)
+            rows, cols, datas = [], [], []
+            for h in range(self.numhedges):
+                for vi, w in enumerate(self.hedge2node[h]):
+                    v = self.hedge2node[h][vi]
+                    rows.append(v)
+                    cols.append(h)
+                    datas.append(1)
+            H = csr_matrix((datas, (rows, cols)), shape=(self.numnodes, self.numhedges), dtype=np.float32)
+            print("DE, D, H")
+            P = H * DE * H.T * D.T
+            PE = H.T * D.T * H * DE
+            eMat = PE * DE
+            vMat = P * D
+            print("eMat, vMat")
+            # convert to torch
+            rows, cols = eMat.nonzero()
+            datas = eMat.data
+            self.eMat = torch.sparse_coo_tensor([rows,cols], datas, dtype=torch.float32)
+            rows, cols = vMat.nonzero()
+            datas = vMat.data
+            self.vMat = torch.sparse_coo_tensor([rows,cols], datas, dtype=torch.float32)
+            print("torch eMat, vMat")
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            self.invDV = self.invDV.to(device)
+            self.invDE = self.invDE.to(device)
+            self.eMat = self.eMat.to(device)
+            self.vMat = self.vMat.to(device)                
+        # For HGNN & HCHA ----------------------------------------------------------------------------------
         if args.embedder == "hgnn" or args.embedder == "hcha":
             nodedeg = []
             hedgedeg = []
@@ -365,7 +407,7 @@ class Hypergraph:
                 hedgedeg.append(len(nodes))
             self.DV2 = torch.pow(torch.FloatTensor(nodedeg), -0.5)
             self.invDE = torch.pow(torch.FloatTensor(hedgedeg),-1)
-            if self.use_gpu:
+            if self.use_gpu or args.embedder == "hcha":
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 self.DV2 = self.DV2.to(device)
                 self.invDE = self.invDE.to(device)

@@ -32,9 +32,10 @@ from model.HNHN import HNHN
 from model.HGNN import HGNN
 from model.HAT import HyperAttn
 from model.UniGCN import UniGCNII
-from model.Transformer import Transformer, TransformerLayer
-from model.TransformerHAT import TransformerHAT, TransformerHATLayer
-from model.TransformerHNHN import TransformerHNHN, TransformerHNHNLayer
+from model.Whatsnet import Whatsnet, WhatsnetLayer
+# from model.WhatsnetClassifier import 
+from model.WhatsnetHAT import WhatsnetHAT, WhatsnetHATLayer
+from model.WhatsnetHNHN import WhatsnetHNHN, WhatsnetHNHNLayer
 from model.layer import FC, Wrap_Embedding
 
 def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, scheduler, loss_fn, opt="train"):
@@ -67,7 +68,7 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             e_reg_weight = data.e_reg_weight[input_nodes['edge']].to(device)
             e_reg_sum = data.e_reg_sum[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, v_reg_weight, v_reg_sum, e_reg_weight, e_reg_sum)
-        elif args.embedder == "transformerHNHN":
+        elif args.embedder == "WhatsnetHNHN":
             v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
             e_feat = data.e_feat[input_nodes['edge']].to(device)
             v_reg_weight = data.v_reg_weight[input_nodes['node']].to(device)
@@ -87,7 +88,7 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
-        elif args.embedder == "transformer":
+        elif args.embedder == "Whatsnet":
             if args.att_type_v in ["ITRE", "ShawRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
@@ -103,9 +104,12 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
                 v, e = embedder(blocks, v_feat, e_feat)
                 
         # Predict Class
-        hembedding = e[hedgeindices]
-        vembedding = v[nodeindices]
-        input_embeddings = torch.cat([hembedding,vembedding], dim=1)
+        if args.scorer == "sm":
+            hembedding = e[hedgeindices]
+            vembedding = v[nodeindices]
+            input_embeddings = torch.cat([hembedding,vembedding], dim=1)
+#         elif args.scorer == "wc":
+#             input_embeddings = 
         predictions = scorer(input_embeddings)
         total_pred.append(predictions.detach())
         total_label.append(nodelabels.detach())
@@ -162,7 +166,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             e_reg_weight = data.e_reg_weight[input_nodes['edge']].to(device)
             e_reg_sum = data.e_reg_sum[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, v_reg_weight, v_reg_sum, e_reg_weight, e_reg_sum)
-        elif args.embedder == "transformerHNHN":
+        elif args.embedder == "WhatsnetHNHN":
             v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
             e_feat = data.e_feat[input_nodes['edge']].to(device)
             v_reg_weight = data.v_reg_weight[input_nodes['node']].to(device)
@@ -182,7 +186,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
-        elif args.embedder == "transformer":
+        elif args.embedder == "Whatsnet":
             if args.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
@@ -198,9 +202,12 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
                 v, e = embedder(blocks, v_feat, e_feat)
                 
         # Predict Class
-        hembedding = e[hedgeindices_in_batch]
-        vembedding = v[nodeindices_in_batch]
-        input_embeddings = torch.cat([hembedding,vembedding], dim=1)
+        if args.scorer == "sm":
+            hembedding = e[hedgeindices_in_batch]
+            vembedding = v[nodeindices_in_batch]
+            input_embeddings = torch.cat([hembedding,vembedding], dim=1)
+#         elif args.scorer == "wc":
+#             input_embeddings = scorer()
         predictions = scorer(input_embeddings)
         total_pred.append(predictions.detach())
         pred_cls = torch.argmax(predictions, dim=1)
@@ -225,6 +232,8 @@ if args.evaltype == "test":
     outputdir = "results_test/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputParamResFname = outputdir + args.model_name + "/param_result.txt"
     outputdir += args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
+    if args.recalculate is False and os.path.isfile(outputdir + "log_test_confusion.txt"):
+        sys.exit("Already Run")
 else:
     outputdir = "results/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputdir += args.model_name + "/" + args.param_name +"/"
@@ -359,22 +368,22 @@ elif args.embedder == "hat":
     embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
-elif args.embedder == "transformer":    
+elif args.embedder == "whatsnet":    
     input_vdim = args.input_vdim
     pe_ablation_flag = args.pe_ablation
-    embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+    embedder = Whatsnet(WhatsnetLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
                            num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
-elif args.embedder == "transformerHAT":
+elif args.embedder == "WhatsnetHAT":
     input_vdim = args.input_vdim
-    embedder = TransformerHAT(TransformerHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+    embedder = WhatsnetHAT(WhatsnetHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
-elif args.embedder == "transformerHNHN":
+elif args.embedder == "WhatsnetHNHN":
     input_vdim = args.input_vdim
-    embedder = TransformerHNHN(TransformerHNHNLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+    embedder = WhatsnetHNHN(WhatsnetHNHNLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
@@ -385,6 +394,8 @@ print("Scorer = ", args.scorer)
 # pick scorer
 if args.scorer == "sm":
     scorer = FC(args.dim_vertex + args.dim_edge, args.dim_edge, args.output_dim, args.scorer_num_layers, args.dropout).to(device)
+# elif args.scorer == "wc": #whatsnet
+#     scorer = WhatsnetClassifier()
     
 if args.embedder == "unigcnii":
     optim = torch.optim.Adam([

@@ -28,6 +28,7 @@ from initialize.initial_embedder import MultipleEmbedding
 from initialize.random_walk_hyper import random_walk_hyper
 
 from model.HCHA import HCHA
+from model.HNN import HNN
 from model.layer import FC, Wrap_Embedding
 
 
@@ -36,7 +37,7 @@ initialization = "rw"
 args = utils.parse_args()
 args.bs = -1
 
-assert args.embedder == "hcha"
+assert args.embedder in ["hcha", "hnn"]
 assert args.scorer == "sm"
 assert args.bs == -1
 
@@ -169,9 +170,12 @@ initembedder = Wrap_Embedding(data.numnodes, args.input_vdim, scale_grad_by_freq
 initembedder.weight = nn.Parameter(A)
 print("Model:", args.embedder)
 
-# model init - Only HCHA
-embedder = HCHA(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, num_heads=args.num_heads, feat_drop=args.dropout).to(device)
-
+# model init
+if args.embedder == "hcha":
+    embedder = HCHA(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, num_heads=args.num_heads, feat_drop=args.dropout).to(device)
+elif args.embedder == "hnn":
+    embedder = HNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, feat_drop=args.dropout).to(device)
+    
 print("Scorer = ", args.scorer)
 # pick scorer - Only 1-layer Linear
 scorer = FC(args.dim_vertex + args.dim_edge, args.dim_hidden, args.output_dim, args.scorer_num_layers, args.dropout).to(device)
@@ -198,10 +202,10 @@ for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'):
     scorer.train()
     v_feat, recon_loss = initembedder(nodes)
     e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
-    DV2 = data.DV2.to(device)
-    invDE = data.invDE.to(device)
-    v, e = embedder(g, v_feat, e_feat, DV2, invDE)
-
+    if args.embedder == "hcha":
+        v, e = embedder(g, v_feat, e_feat, data.DV2, data.invDE)
+    elif args.embedder == "hnn":
+        v, e = embedder(g, v_feat, e_feat, data.invDV, data.invDE, data.vMat, data.eMat)
     # Predict Class    
     hembedding = e[train_edata]
     vembedding = v[train_vdata]
@@ -288,9 +292,10 @@ if args.evaltype == "test":
     with torch.no_grad():
         v_feat, recon_loss = initembedder(nodes)
         e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
-        DV2 = data.DV2.to(device)
-        invDE = data.invDE.to(device)
-        v, e = embedder(g, v_feat, e_feat, DV2, invDE)
+        if args.embedder == "hcha":
+            v, e = embedder(g, v_feat, e_feat, data.DV2, data.invDE)
+        elif args.embedder == "hnn":
+            v, e = embedder(g, v_feat, e_feat, data.invDV, data.invDE, data.vMat, data.eMat)
         
         hembedding = e[test_edata]
         vembedding = v[test_vdata]
