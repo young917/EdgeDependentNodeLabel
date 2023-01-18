@@ -33,7 +33,7 @@ from model.HGNN import HGNN
 from model.HAT import HyperAttn
 from model.UniGCN import UniGCNII
 from model.Whatsnet import Whatsnet, WhatsnetLayer
-# from model.WhatsnetClassifier import 
+from model.WhatsnetClassifier import WhatsnetClassifier
 from model.WhatsnetHAT import WhatsnetHAT, WhatsnetHATLayer
 from model.WhatsnetHNHN import WhatsnetHNHN, WhatsnetHNHNLayer
 from model.layer import FC, Wrap_Embedding
@@ -108,9 +108,9 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             hembedding = e[hedgeindices]
             vembedding = v[nodeindices]
             input_embeddings = torch.cat([hembedding,vembedding], dim=1)
-#         elif args.scorer == "wc":
-#             input_embeddings = 
-        predictions = scorer(input_embeddings)
+            predictions = scorer(input_embeddings)
+        elif args.scorer == "wc":
+            predictions, nodelabels = scorer(blocks[-1], v, e)
         total_pred.append(predictions.detach())
         total_label.append(nodelabels.detach())
         
@@ -206,9 +206,9 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             hembedding = e[hedgeindices_in_batch]
             vembedding = v[nodeindices_in_batch]
             input_embeddings = torch.cat([hembedding,vembedding], dim=1)
-#         elif args.scorer == "wc":
-#             input_embeddings = scorer()
-        predictions = scorer(input_embeddings)
+            predictions = scorer(input_embeddings)
+        elif args.scorer == "wc":
+            predictions, nodelabels = scorer(blocks[-1], v, e)
         total_pred.append(predictions.detach())
         pred_cls = torch.argmax(predictions, dim=1)
         total_label.append(nodelabels.detach())
@@ -394,8 +394,8 @@ print("Scorer = ", args.scorer)
 # pick scorer
 if args.scorer == "sm":
     scorer = FC(args.dim_vertex + args.dim_edge, args.dim_edge, args.output_dim, args.scorer_num_layers, args.dropout).to(device)
-# elif args.scorer == "wc": #whatsnet
-#     scorer = WhatsnetClassifier()
+elif args.scorer == "wc": #whatsnet
+    scorer = WhatsnetClassifier(args.dim_vertex, args.output_dim, dim_hidden=args.dim_hidden, num_layer=args.scorer_num_layers).to(device)
     
 if args.embedder == "unigcnii":
     optim = torch.optim.Adam([
