@@ -2,3 +2,6 @@ dataset/AMinerAuthor/*.txt filter=lfs diff=lfs merge=lfs -text
 dataset/emailEnron/*.txt filter=lfs diff=lfs merge=lfs -text
 dataset/emailEu/*.txt filter=lfs diff=lfs merge=lfs -text
 dataset/StackOverflowPhysics/*.txt filter=lfs diff=lfs merge=lfs -text
+downstreamdata/AMiner/*.txt filter=lfs diff=lfs merge=lfs -text
+train_results/AMiner/*.txt filter=lfs diff=lfs merge=lfs -text
+train_results/AMiner/prediction.txt filter=lfs diff=lfs merge=lfs -text
