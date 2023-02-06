@@ -5,7 +5,12 @@
 __pycache__/
 results_test/
 nongraph_results/
-dataset/
+dataset/AMinerAuthor/
+dataset/DBLP/
+dataset/emailEnron/
+dataset/emailEu/
+dataset/StackOverflowBiology/
+dataset/StackOverflowPhyscis/
 results/
 Untitled.ipynb
 *.sh
