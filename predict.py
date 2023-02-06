@@ -32,16 +32,16 @@ from model.HNHN import HNHN
 from model.HGNN import HGNN
 from model.HAT import HyperAttn
 from model.UniGCN import UniGCNII
-from model.Transformer import Transformer, TransformerLayer
-from model.TransformerHAT import TransformerHAT, TransformerHATLayer
-from model.TransformerHNHN import TransformerHNHN, TransformerHNHNLayer
+from model.Whatsnet import Whatsnet, WhatsnetLayer
+from model.WhatsnetHAT import WhatsnetHAT, WhatsnetHATLayer
+from model.WhatsnetHNHN import WhatsnetHNHN, WhatsnetHNHNLayer
 from model.layer import FC, Wrap_Embedding
 
 # Make Output Directory --------------------------------------------------------------------------------------------------------------
 initialization = "rw"
 args = utils.parse_args()
-outputdir = "results/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
-outputdir += args.model_name + "/" + args.param_name +"/"
+outputdir = "results_test/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
+outputdir += args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
 if os.path.isdir(outputdir) is False:
     os.makedirs(outputdir)
 print("OutputDir = " + outputdir)
@@ -129,27 +129,25 @@ if args.embedder == "hnhn":
 elif args.embedder == "hgnn":
     embedder = HGNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hat":
-    if args.encode_type == "":
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
-    else:
-        embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=args.order_dim, num_layer=args.num_layers, dropout=args.dropout).to(device)   
+    embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
-elif args.embedder == "transformer":    
+elif args.embedder == "whatsnet":    
     input_vdim = args.input_vdim
-    embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers,
+    pe_ablation_flag = args.pe_ablation
+    embedder = Whatsnet(WhatsnetLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
-                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=args.pe_ablation).to(device)
-elif args.embedder == "transformerHAT":
+                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
+elif args.embedder == "whatsnetHAT":
     input_vdim = args.input_vdim
-    embedder = TransformerHAT(TransformerHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+    embedder = WhatsnetHAT(WhatsnetHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
-elif args.embedder == "transformerHNHN":
+elif args.embedder == "whatsnetHNHN":
     input_vdim = args.input_vdim
-    embedder = TransformerHNHN(TransformerHNHNLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+    embedder = WhatsnetHNHN(WhatsnetHNHNLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
@@ -210,7 +208,7 @@ with torch.no_grad():
             e_reg_weight = data.e_reg_weight[input_nodes['edge']].to(device)
             e_reg_sum = data.e_reg_sum[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, v_reg_weight, v_reg_sum, e_reg_weight, e_reg_sum)
-        elif args.embedder == "transformerHNHN":
+        elif args.embedder == "whatsnetHNHN":
             v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
             e_feat = data.e_feat[input_nodes['edge']].to(device)
             v_reg_weight = data.v_reg_weight[input_nodes['node']].to(device)
@@ -230,8 +228,8 @@ with torch.no_grad():
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
-        elif args.embedder == "transformer":
-            if args.att_type_v in ["ITRE", "ShawRE"]:
+        elif args.embedder == "whatsnet":
+            if args.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
                 e_feat = data.e_feat[input_nodes['edge']].to(device)
@@ -288,13 +286,6 @@ with torch.no_grad():
         f.write("Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(accuracy,precision,recall,f1))
         
     with open(outputdir + "prediction.txt", "w") as f:
-        for h in range(data.numhedges):
-            line = []
-            for v in data.hedge2node[h]:
-                line.append(str(allpredictions[h][v]))
-            f.write("\t".join(line) + "\n")
-            
-    with open("train_results/{}/prediction.txt".format(args.dataset_name), "w") as f:
         for h in range(data.numhedges):
             line = []
             for v in data.hedge2node[h]:

@@ -33,7 +33,7 @@ from model.HGNN import HGNN
 from model.HAT import HyperAttn
 from model.UniGCN import UniGCNII
 from model.Whatsnet import Whatsnet, WhatsnetLayer
-from model.WhatsnetClassifier import WhatsnetClassifier
+from model.WhatsnetIM import WhatsnetIM
 from model.WhatsnetHAT import WhatsnetHAT, WhatsnetHATLayer
 from model.WhatsnetHNHN import WhatsnetHNHN, WhatsnetHNHNLayer
 from model.layer import FC, Wrap_Embedding
@@ -68,7 +68,7 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             e_reg_weight = data.e_reg_weight[input_nodes['edge']].to(device)
             e_reg_sum = data.e_reg_sum[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, v_reg_weight, v_reg_sum, e_reg_weight, e_reg_sum)
-        elif args.embedder == "WhatsnetHNHN":
+        elif args.embedder == "whatsnetHNHN":
             v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
             e_feat = data.e_feat[input_nodes['edge']].to(device)
             v_reg_weight = data.v_reg_weight[input_nodes['node']].to(device)
@@ -88,7 +88,7 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
-        elif args.embedder == "Whatsnet":
+        elif args.embedder == "whatsnet":
             if args.att_type_v in ["ITRE", "ShawRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
@@ -109,7 +109,7 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             vembedding = v[nodeindices]
             input_embeddings = torch.cat([hembedding,vembedding], dim=1)
             predictions = scorer(input_embeddings)
-        elif args.scorer == "wc":
+        elif args.scorer == "im":
             predictions, nodelabels = scorer(blocks[-1], v, e)
         total_pred.append(predictions.detach())
         total_label.append(nodelabels.detach())
@@ -166,7 +166,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             e_reg_weight = data.e_reg_weight[input_nodes['edge']].to(device)
             e_reg_sum = data.e_reg_sum[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, v_reg_weight, v_reg_sum, e_reg_weight, e_reg_sum)
-        elif args.embedder == "WhatsnetHNHN":
+        elif args.embedder == "whatsnetHNHN":
             v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
             e_feat = data.e_feat[input_nodes['edge']].to(device)
             v_reg_weight = data.v_reg_weight[input_nodes['node']].to(device)
@@ -186,7 +186,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
-        elif args.embedder == "Whatsnet":
+        elif args.embedder == "whatsnet":
             if args.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
                 v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
@@ -207,7 +207,7 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             vembedding = v[nodeindices_in_batch]
             input_embeddings = torch.cat([hembedding,vembedding], dim=1)
             predictions = scorer(input_embeddings)
-        elif args.scorer == "wc":
+        elif args.scorer == "im":
             predictions, nodelabels = scorer(blocks[-1], v, e)
         total_pred.append(predictions.detach())
         pred_cls = torch.argmax(predictions, dim=1)
@@ -237,6 +237,8 @@ if args.evaltype == "test":
 else:
     outputdir = "results/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputdir += args.model_name + "/" + args.param_name +"/"
+    if args.recalculate is False and os.path.isfile(outputdir + "log_test_confusion.txt"):
+        sys.exit("Already Run")
 if os.path.isdir(outputdir) is False:
     os.makedirs(outputdir)
 print("OutputDir = " + outputdir)
@@ -261,6 +263,25 @@ plot_epoch = args.epochs
 
 if os.path.isfile(outputdir + "checkpoint.pt") and args.recalculate is False:
     print("Start from checkpoint")
+elif (args.recalculate is False and args.evaltype == "valid") and os.path.isfile(outputdir + "log_valid_micro.txt"):
+    if os.path.isfile(outputdir + "log_valid_micro.txt"):
+        max_acc = 0
+        cur_patience = 0
+        epoch = 0
+        with open(outputdir + "log_valid_micro.txt", "r") as f:
+            for line in f.readlines():
+                ep_str = line.rstrip().split(":")[0].split(" ")[0]
+                acc_str = line.rstrip().split(":")[-1]
+                epoch = int(ep_str)
+                if max_acc < float(acc_str):
+                    cur_patience = 0
+                    max_acc = float(acc_str)
+                else:
+                    cur_patience += 1
+                if cur_patience > args.patience:
+                    break
+        if cur_patience > args.patience or epoch == args.epochs:
+            sys.exit("Already Run by log valid micro txt")
 else:
     if os.path.isfile(outputdir + "log_train.txt"):
         os.remove(outputdir + "log_train.txt")
@@ -374,14 +395,14 @@ elif args.embedder == "whatsnet":
     embedder = Whatsnet(WhatsnetLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
-                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
-elif args.embedder == "WhatsnetHAT":
+                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag, vis_flag=args.analyze_att).to(device)
+elif args.embedder == "whatsnetHAT":
     input_vdim = args.input_vdim
     embedder = WhatsnetHAT(WhatsnetHATLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v,
                            num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
-elif args.embedder == "WhatsnetHNHN":
+elif args.embedder == "whatsnetHNHN":
     input_vdim = args.input_vdim
     embedder = WhatsnetHNHN(WhatsnetHNHNLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
                            weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, 
@@ -394,8 +415,8 @@ print("Scorer = ", args.scorer)
 # pick scorer
 if args.scorer == "sm":
     scorer = FC(args.dim_vertex + args.dim_edge, args.dim_edge, args.output_dim, args.scorer_num_layers, args.dropout).to(device)
-elif args.scorer == "wc": #whatsnet
-    scorer = WhatsnetClassifier(args.dim_vertex, args.output_dim, dim_hidden=args.dim_hidden, num_layer=args.scorer_num_layers).to(device)
+elif args.scorer == "im": #whatsnet
+    scorer = WhatsnetIM(args.dim_vertex, args.output_dim, dim_hidden=args.dim_hidden, num_layer=args.scorer_num_layers).to(device)
     
 if args.embedder == "unigcnii":
     optim = torch.optim.Adam([

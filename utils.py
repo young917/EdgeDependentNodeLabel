@@ -62,6 +62,7 @@ def parse_args():
     parser.add_argument('--alpha_v', default=0, type=float)
     #     pe
     parser.add_argument('--pe', default='', type=str, help="positional encoding option for ITRE, ShawRE; KD, KPRW")
+    parser.add_argument('--efeat', default='zero', type=str, help="initialize for hyperedge embedding")
     parser.add_argument('--vorder_input', default='', type=str, help="positional encoding input for OrderPE")
     parser.add_argument('--whole_order', action='store_true')
     
@@ -115,10 +116,10 @@ def parse_args():
     args.scorer_name = "{}_snl{}".format(args.scorer, args.scorer_num_layers)
     args.model_name = args.embedder_name + "_" + args.scorer_name
     
-    if args.embedder == "hcha" or args.embedder == "hnn":
+    if args.embedder == "hcha":
         args.param_name = "hd_{}_od_{}_do_{}_lr_{}_ni_{}_sp_{}".format(args.dim_hidden, args.dim_edge, args.dropout, args.lr, args.num_inds, args.sampling)
     elif args.embedder == "hnn":
-        args.param_name = "hd_{}_od_{}_do_{}_lr_{}_psi_{}".format(args.dim_hidden, args.dim_edge, args.dropout, args.lr, args.psi_num_layers)
+        args.param_name = "hd_{}_od_{}_do_{}_lr_{}_psi_{}_ie_{}".format(args.dim_hidden, args.dim_edge, args.dropout, args.lr, args.psi_num_layers, args.efeat)
     else:
         args.param_name = "hd_{}_od_{}_bs_{}_lr_{}_ni_{}_sp_{}".format(args.dim_hidden, args.dim_edge, args.bs, args.lr, args.num_inds, args.sampling)
         

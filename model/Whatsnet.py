@@ -6,6 +6,7 @@ import pdb
 import math
 import os
 import time
+import pickle
 
 # Based on SetTransformer https://github.com/juho-lee/set_transformer
 
@@ -122,7 +123,8 @@ class WhatsnetLayer(nn.Module):
                  ln=False,
                  activation=F.relu,
                  weight_flag=False,
-                 pe_ablation_flag=False):
+                 pe_ablation_flag=False,
+                 vis_flag=False):
         super(WhatsnetLayer, self).__init__()
         
         self.num_heads = num_heads
@@ -143,6 +145,7 @@ class WhatsnetLayer(nn.Module):
         self.lnflag = ln
         self.weight_flag = weight_flag
         self.pe_ablation_flag = pe_ablation_flag
+        self.vis_flag = vis_flag
         self.re_pe_flag = False
         if "RE" in self.att_type_v: # relative positional encoding
             self.re_pe_flag = True
@@ -197,13 +200,23 @@ class WhatsnetLayer(nn.Module):
         self.dec_e.append(nn.Dropout(dropout))
         self.dec_e.append(nn.Linear(dim_hidden, output_vdim))
         
+        self.savedir = ""
+        self.savename = ""
+        
+    def set_savename(self, savedir, batchindex):
+        self.savedir = savedir
+        self.savename = str(batchindex)
+    
+    def off_vis_flag(self):
+        self.vis_flag = False
+        
     def v_message_func(self, edges):
         if self.re_pe_flag:
-            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'vindex': edges.src['index'], 'weight': edges.data['weight']}
+            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'vindex': edges.src['index'], 'weight': edges.data['weight'], 'label': edges.data['label'].long()}
         elif self.weight_flag: # weight represents positional information
-            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight']}
+            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'weight': edges.data['weight'], 'label': edges.data['label'].long()}
         else:
-            return {'q': edges.dst['feat'], 'v': edges.src['feat']}
+            return {'q': edges.dst['feat'], 'v': edges.src['feat'], 'label': edges.data['label'].long()}
         
     def e_message_func(self, edges):    
         if self.weight_flag: # weight represents positional information
@@ -217,6 +230,14 @@ class WhatsnetLayer(nn.Module):
         v = nodes.mailbox['v']
         if self.weight_flag:
             W = nodes.mailbox['weight']
+        
+        if self.vis_flag:
+            L = nodes.mailbox['label']
+            vdim = v.shape[-1]
+            self.before.append(v.reshape(-1, vdim))
+            print(v.shape)
+            self.weight.append(W.reshape(-1, 4))
+            self.label.append(L.reshape(-1, 1))
         
         if self.re_pe_flag:
             # 1. reduce last dimension
@@ -241,6 +262,12 @@ class WhatsnetLayer(nn.Module):
             else:
                 v = layer(v)
         v = self.dropout(v)
+        # vis
+        if self.vis_flag:
+            print("after : ", v.shape)
+            vdim = v.shape[-1]
+            self.after.append(v.reshape(-1, vdim))
+            
         # Aggregate
         o = v
         for i, layer in enumerate(self.dec_v):
@@ -248,6 +275,7 @@ class WhatsnetLayer(nn.Module):
                 o = layer(Q, o)
             else:
                 o = layer(o)
+                
         return {'o': o}
     
     def e_reduce_func(self, nodes):
@@ -276,6 +304,12 @@ class WhatsnetLayer(nn.Module):
         return {'o': o}
     
     def forward(self, g1, g2, vfeat, efeat, vindex=None):
+        if self.vis_flag:
+            self.before = []
+            self.after = []
+            self.weight = []
+            self.label =[]
+            
         with g1.local_scope():
             g1.srcnodes['node'].data['feat'] = vfeat
             if self.re_pe_flag:
@@ -291,6 +325,16 @@ class WhatsnetLayer(nn.Module):
             g2.update_all(self.e_message_func, self.e_reduce_func, etype='con')
             vfeat = g2.dstnodes['node'].data['o']
             vfeat = vfeat.squeeze(1)
+        
+        if self.vis_flag:
+            save_dict = {
+                "before": torch.cat(self.before, dim=0),
+                "after": torch.cat(self.after, dim=0),
+                "weight": torch.cat(self.weight, dim=0),
+                "label": torch.cat(self.label, dim=0),
+            }
+            with open(self.savedir + "edv_{}.pkl".format(self.savename), "wb") as f:
+                pickle.dump(save_dict, f)
         
         return [vfeat, efeat]
     
@@ -317,7 +361,8 @@ class Whatsnet(nn.Module):
                  dropout=0.6,
                  activation=F.relu,
                  weight_flag=False,
-                 pe_ablation_flag=False):
+                 pe_ablation_flag=False,
+                 vis_flag=False):
         super(Whatsnet, self).__init__()
         self.num_layers = num_layers
         self.activation = activation
@@ -326,7 +371,7 @@ class Whatsnet(nn.Module):
         if num_layers == 1:
              self.layers.append(model(input_vdim, input_edim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                       att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
-                                      dropout=dropout, ln=layernorm, activation=None, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
+                                      dropout=dropout, ln=layernorm, activation=None, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag, vis_flag=vis_flag))
         else:
             for i in range(num_layers):
                 if i == 0:
@@ -336,12 +381,21 @@ class Whatsnet(nn.Module):
                 elif i == (num_layers - 1):
                     self.layers.append(model(hidden_dim, hidden_dim, vertex_dim, edge_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                              att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
-                                             dropout=dropout, ln=layernorm, activation=None, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
+                                             dropout=dropout, ln=layernorm, activation=None, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag, vis_flag=vis_flag))
                 else:
                     self.layers.append(model(hidden_dim, hidden_dim, hidden_dim, hidden_dim, weight_dim=weight_dim, num_heads=num_heads, num_inds=num_inds,
                                              att_type_v=att_type_v, agg_type_v=agg_type_v, att_type_e = att_type_e, agg_type_e=agg_type_e, num_att_layer=num_att_layer,
                                              dropout=dropout, ln=layernorm, activation=self.activation, weight_flag=weight_flag, pe_ablation_flag=pe_ablation_flag))
     
+    def set_savename(self, savedir, batchindex):
+        for l in range(self.num_layers):
+            self.layers[l].set_savename(savedir, batchindex)
+    
+    def off_vis_flag(self):
+        for l in range(self.num_layers):
+            self.layers[l].off_vis_flag()
+    
+                                       
     def forward(self, blocks, vfeat, efeat, vindex=None):
         for l in range(self.num_layers):
             vfeat, efeat = self.layers[l](blocks[2*l], blocks[2*l+1], vfeat, efeat, vindex)

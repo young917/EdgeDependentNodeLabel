@@ -24,7 +24,7 @@ We provide six real-world datasets for our new benchmark task(```/dataset/```) a
 We provide source code for running WHATsNET as well as nine competitors in all the above benchmark datasets
 
 * BaselineU and BaselineP
-* HNHN, HGNN, HCHA, HAT, UniGCNII
+* HNHN, HGNN, HCHA, HAT, UniGCNII, HNN
 * HST, AST
 * WHATsNET
 
@@ -38,11 +38,17 @@ We apply our benchmark task on the following downstream tasks,
 * Product Return Prediction: https://github.com/jianboli/HyperGo
 
 
-(4) Reproducing *all* **ablation studies** of WHATsNET
+(4) Reproducing *ALL* results in Paper
 
-* WithinATT and WithinOrderPE
-* Positional Encodings
-* WithinATT in propagation from hyperedges to nodes
+* **Ablation Studies** of WHATsNET
+* w/o WithinATT and WithinOrderPE
+* WHATsNET-IM
+* Positional encodings schemes
+* Replacing WithinATT in updating node embeddings
+* Number of inducing points
+* Types of node centralities
+* **Visualization** of WHATsNET
+* **Evaluation on Node Label Distribution Preservation** of WHATsNET
 
 - - -
 
@@ -64,18 +70,20 @@ You can
 * train WHATsNET
 * evaluate WHATsNET on JSD of node-level label dist.
 * predict edge-dependent node labels by trained WHATsNET
+* analysis node embeddings for visualization: concatenated embeddings of a node and hyperedge pair, node embeddings before/after WithinATT 
 
 by following below code,
 ```
-python train.py/evaluate.py/predict.py  --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" 
-                                        --embedder transformer --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ 
-                                        --dataset_name [name for dataset]
-                                        --num_att_layer [number of layers in WithinATT]
-                                        --num_layers [number of layers] 
-                                        --bs [batch size]
-                                        --lr [learning rate]
-                                        --sampling [size of sampling incident hyperedges in aggregation at nodes]
-                                        --scorer sm --scorer_num_layers 1 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5
+python train.py/evaluate.py/predict/analysis.py  --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" 
+                                                 --embedder whatsnet --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ 
+                                                 --dataset_name [name for dataset]
+                                                 --num_att_layer [number of layers in WithinATT]
+                                                 --num_layers [number of layers] 
+                                                 --bs [batch size]
+                                                 --lr [learning rate]
+                                                 --sampling [size of sampling incident hyperedges in aggregation at nodes]
+                                                 [--analyze_att  when running analysis.py]
+                                                 --scorer sm --scorer_num_layers 1 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5
 ```
 
 ### Run Benchmark Tasks
@@ -95,12 +103,16 @@ You can run three downstream tasks with WHATsNET and baselines by
 #### Ranking Aggregation
 In the `RankingAggregation` directory, 
 
-Run `ranking_aggregation_result.ipynb`
+For Halo2 game dataset, run `ranking_aggregation_result.ipynb`
+
+For AMiner dataset with author H-index, run `aminer_ranking.py`
 
 #### Clustering
 In the `Clustering` directory, 
 
-Run `clustering.py` and `clustering-baseline.py`
+For DBLP, run `clustering.py`
+
+For AMiner, run `clustering_aminer.py`
 
 #### Product Return Prediction
 In the `ProductReturnPred` directory,
@@ -115,7 +127,6 @@ Then evaluate on downstreamtask,
 python main_prod.py               # get result of Hypergraph w/ GroundTruth
 python main_prod.py --model_flag  # get result of Hypergraph w/ WHATsNET
 python main_prod.py --unif_flag   # get result of Hypergraph w/o Labels
-python main_prod.py --baseline    # get result of baselines (k-means, jaccard)
 ```
 
 ### Run Ablation Studies

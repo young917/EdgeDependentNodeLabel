@@ -34,8 +34,9 @@ from initialize.random_walk_hyper import random_walk_hyper
 from model.HNHN import HNHN
 from model.HGNN import HGNN
 from model.HAT import HyperAttn
+from model.HNN import HNN
 from model.UniGCN import UniGCNII
-from model.Transformer import Transformer, TransformerLayer
+from model.Whatsnet import Whatsnet, WhatsnetLayer
 from model.layer import FC, Wrap_Embedding
 from model.HCHA import HCHA
 
@@ -48,7 +49,7 @@ if args.evaltype == "test":
     outputParamResFname = outputdir + args.model_name + "/param_result.txt"
     outputdir += args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
 else:
-    outputdir = "results_v2/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
+    outputdir = "results/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/"
     outputParamResFname = outputdir + args.model_name + "/param_result.txt"
     outputdir += args.model_name + "/" + args.param_name +"/"
 if os.path.isdir(outputdir) is False:
@@ -77,6 +78,8 @@ if args.fix_seed:
 
 # Check ----------------------------------------------------------------------------
 exist_filelist = ["log_train.txt", "embedder.pt", "initembedder.pt", "scorer.pt", "log_valid_micro.txt", "log_valid_macro.txt", "log_valid_confusion.txt", "log_test_micro.txt", "log_test_macro.txt", "log_test_confusion.txt"]
+# if os.path.isfile(outputdir + "jsd_div.txt"):
+#     sys.exit("Already Exist!")
 for fname in exist_filelist:
     if os.path.isfile(outputdir + fname) is False:
         with open("EXCEPTION.txt", "+a") as f:
@@ -87,7 +90,7 @@ for fname in exist_filelist:
 data = dl.Hypergraph(args, dataset_name)
 test_data = data.get_data(2)
 full_ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)
-if args.orderflag:
+if data.weight_flag:
     g = gen_weighted_DGLGraph(args, data.hedge2node, data.hedge2nodePE, data.hedge2nodepos, data.node2hedge, data.node2hedgePE, device)
 else:
     g = gen_DGLGraph(args, data.hedge2node, data.hedge2nodepos, data.node2hedge, device)
@@ -96,7 +99,15 @@ try:
 except:
     fullsampler = dgl.dataloading.MultiLayerNeighborSampler(full_ls)
 
-if args.embedder == "hcha":
+if args.use_gpu:
+    g = g.to(device)
+    train_data = train_data.to(device)
+    valid_data = valid_data.to(device)
+    if args.evaltype == "test":
+        test_data = test_data.to(device)
+    data.e_feat = data.e_feat.to(device)
+    
+if args.embedder == "hcha" or args.embedder == "hnn":
     test_edata, test_vdata, test_label = [], [], []
     for hedge in test_data:
         for vidx, v in enumerate(data.hedge2node[hedge]):
@@ -106,9 +117,6 @@ if args.embedder == "hcha":
     g = g.to(device)
     test_label = torch.LongTensor(test_label).to(device)
 else:
-    if args.use_gpu:
-        g = g.to(device)
-        test_data = test_data.to(device)
     testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
 
 args.input_vdim = data.v_feat.size(1)
@@ -164,12 +172,19 @@ elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
 elif args.embedder == "hcha":
     embedder = HCHA(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, num_heads=args.num_heads, feat_drop=args.dropout).to(device)
-elif args.embedder == "transformer":    
+elif args.embedder == "hnn":
+    args.input_edim = args.input_vdim
+    avgflag = False
+    if args.efeat == "avg":
+        avgflag = True
+    embedder = HNN(args.input_vdim, args.input_vdim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_psi_layer=args.psi_num_layers, num_layers=args.num_layers, feat_drop=args.dropout, avginit=avgflag).to(device)
+elif args.embedder == "whatsnet":    
     input_vdim = args.input_vdim
-    embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers,
+    pe_ablation_flag = args.pe_ablation
+    embedder = Whatsnet(WhatsnetLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
-                           num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
+                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag).to(device)
 
     
 print("Embedder to Device")
@@ -194,12 +209,13 @@ node2ansrole = {}
 nodes = torch.LongTensor(range(data.numnodes)).to(device)
 
 with torch.no_grad():
-    if args.embedder == "hcha":
+    if args.embedder == "hcha" or args.embedder == "hnn":
         v_feat, recon_loss = initembedder(nodes)
         e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
-        DV2 = data.DV2.to(device)
-        invDE = data.invDE.to(device)
-        v, e = embedder(g, v_feat, e_feat, DV2, invDE)
+        if args.embedder == "hcha":
+            v, e = embedder(g, v_feat, e_feat, data.DV2, data.invDE)
+        elif args.embedder == "hnn":
+            v, e = embedder(g, v_feat, e_feat, data.invDV, data.invDE, data.vMat, data.eMat)
         hembedding = e[test_edata]
         vembedding = v[test_vdata]
         input_embeddings = torch.cat([hembedding,vembedding], dim=1)

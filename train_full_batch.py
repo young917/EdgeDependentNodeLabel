@@ -12,6 +12,7 @@ from tqdm import tqdm
 import time
 import argparse
 import dgl
+import gc
 from scipy.sparse import csr_matrix
 from scipy.sparse import vstack as s_vstack
 from sklearn.preprocessing import StandardScaler
@@ -83,6 +84,25 @@ best_eval_acc = 0
 
 if os.path.isfile(outputdir + "checkpoint.pt"):
     print("Start from checkpoint")
+elif (args.recalculate is False and args.evaltype == "valid") and os.path.isfile(outputdir + "log_valid_micro.txt"):
+    if os.path.isfile(outputdir + "log_valid_micro.txt"):
+        max_acc = 0
+        cur_patience = 0
+        epoch = 0
+        with open(outputdir + "log_valid_micro.txt", "r") as f:
+            for line in f.readlines():
+                ep_str = line.rstrip().split(":")[0].split(" ")[0]
+                acc_str = line.rstrip().split(":")[-1]
+                epoch = int(ep_str)
+                if max_acc < float(acc_str):
+                    cur_patience = 0
+                    max_acc = float(acc_str)
+                else:
+                    cur_patience += 1
+                if cur_patience > args.patience:
+                    break
+        if cur_patience > args.patience or epoch == args.epochs:
+            sys.exit("Already Run by log valid micro txt")
 else:
     if os.path.isfile(outputdir + "log_train.txt"):
         os.remove(outputdir + "log_train.txt")
@@ -134,7 +154,6 @@ g = gen_DGLGraph(args, data.hedge2node, data.hedge2nodepos, data.node2hedge, dev
 
 # init embedder
 args.input_vdim = 48
-args.input_edim = 48
 savefname = "../%s_%d_wv_%d_%s.npy" % (args.dataset_name, args.k, args.input_vdim, args.walk)
 node_list = np.arange(data.numnodes).astype('int')
 if os.path.isfile(savefname) is False:
@@ -174,7 +193,11 @@ print("Model:", args.embedder)
 if args.embedder == "hcha":
     embedder = HCHA(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, num_heads=args.num_heads, feat_drop=args.dropout).to(device)
 elif args.embedder == "hnn":
-    embedder = HNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layers=args.num_layers, feat_drop=args.dropout).to(device)
+    args.input_edim = args.input_vdim
+    avgflag = False
+    if args.efeat == "avg":
+        avgflag = True
+    embedder = HNN(args.input_vdim, args.input_vdim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_psi_layer=args.psi_num_layers, num_layers=args.num_layers, feat_drop=args.dropout, avginit=avgflag).to(device)
     
 print("Scorer = ", args.scorer)
 # pick scorer - Only 1-layer Linear
@@ -196,16 +219,18 @@ train_acc=0
 print(A.shape)
 print(data.numnodes)
 nodes = torch.LongTensor(range(data.numnodes)).to(device)
+input_e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
 for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'):
     # Training stage
+    initembedder.train()
     embedder.train()
     scorer.train()
-    v_feat, recon_loss = initembedder(nodes)
-    e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
+    
+    input_v_feat, recon_loss = initembedder(nodes)
     if args.embedder == "hcha":
-        v, e = embedder(g, v_feat, e_feat, data.DV2, data.invDE)
+        v, e = embedder(g, input_v_feat, input_e_feat, data.DV2, data.invDE)
     elif args.embedder == "hnn":
-        v, e = embedder(g, v_feat, e_feat, data.invDV, data.invDE, data.vMat, data.eMat)
+        v, e = embedder(g, input_v_feat, input_e_feat, data.invDV, data.invDE, data.vMat, data.eMat)
     # Predict Class    
     hembedding = e[train_edata]
     vembedding = v[train_vdata]
@@ -219,7 +244,6 @@ for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'):
     train_loss.backward()
     optim.step()
     scheduler.step()
-    torch.cuda.empty_cache()
     
     # Calculate Accuracy & Epoch Loss
     pred_cls = torch.argmax(predictions, dim=1)
@@ -228,56 +252,68 @@ for epoch in tqdm(range(1, args.epochs + 1), desc='Epoch'):
     with open(outputdir + "log_train.txt", "+a") as f:
         f.write("%d epoch: Training loss : %.4f (%.4f, %.4f) / Training acc : %.4f\n" % (epoch, train_loss, train_ce_loss, recon_loss, train_acc))
         
-    # Test
+    gc.collect()
+    torch.cuda.empty_cache()
+    
+    del hembedding, vembedding, input_embeddings, predictions, pred_cls, train_acc, train_loss
+        
+    # input_Test
     if epoch % test_epoch == 0:
+        initembedder.eval()
         embedder.eval()
         scorer.eval()
-        
-        hembedding = e[valid_edata]
-        vembedding = v[valid_vdata]
-        input_embeddings = torch.cat([hembedding,vembedding], dim=1)
-        predictions = scorer(input_embeddings)
-        eval_ce_loss = loss_fn(predictions, valid_label)
-        eval_loss = eval_ce_loss + args.rw * recon_loss
-        predictions = scorer(input_embeddings)
-        pred_cls = torch.argmax(predictions, dim=1)
-        eval_acc = torch.eq(pred_cls, valid_label).sum().item() / len(valid_label)
-        
-        y_test = valid_label.detach().cpu().numpy()
-        pred = pred_cls.detach().cpu().numpy()
-        
-        confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro')
-        with open(outputdir + "log_valid_micro.txt", "+a") as f:
-            f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, eval_loss, eval_ce_loss, recon_loss, eval_acc, precision, recall, f1))
-        confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro')
-        with open(outputdir + "log_valid_confusion.txt", "+a") as f:
-            for r in range(args.output_dim):
-                for c in range(args.output_dim):
-                    f.write(str(confusion[r][c]))
-                    if c == (args.output_dim - 1):
-                        f.write("\n")
-                    else:
-                        f.write("\t")
-        with open(outputdir + "log_valid_macro.txt", "+a") as f:               
-            f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, eval_loss, eval_ce_loss, recon_loss, accuracy,precision,recall,f1))
+        e = e.detach()
+        v = v.detach()
+        with torch.no_grad():
+            hembedding = e[valid_edata]
+            vembedding = v[valid_vdata]
+            input_embeddings = torch.cat([hembedding,vembedding], dim=1)
+            predictions = scorer(input_embeddings)
+            eval_ce_loss = loss_fn(predictions, valid_label)
+            eval_loss = eval_ce_loss + args.rw * recon_loss
+            predictions = scorer(input_embeddings)
+            pred_cls = torch.argmax(predictions, dim=1)
+            eval_acc = torch.eq(pred_cls, valid_label).sum().item() / len(valid_label)
 
-        if best_eval_acc < eval_acc:
-            print(best_eval_acc)
-            best_eval_acc = eval_acc
-            patience = 0
-            if args.evaltype == "test" or args.save_epochs > 0:
-                print("Model Save")
-                modelsavename = outputdir + "embedder.pt"
-                torch.save(embedder.state_dict(), modelsavename)
-                scorersavename = outputdir + "scorer.pt"
-                torch.save(scorer.state_dict(), scorersavename)
-                initembeddersavename = outputdir + "initembedder.pt"
-                torch.save(initembedder.state_dict(),initembeddersavename)
-        else:
-            patience += 1
+            y_test = valid_label.detach().cpu().numpy()
+            pred = pred_cls.detach().cpu().numpy()
 
-        if patience > args.patience:
-            break
+            confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro')
+            with open(outputdir + "log_valid_micro.txt", "+a") as f:
+                f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, eval_loss, eval_ce_loss, recon_loss, eval_acc, precision, recall, f1))
+            confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro')
+            with open(outputdir + "log_valid_confusion.txt", "+a") as f:
+                for r in range(args.output_dim):
+                    for c in range(args.output_dim):
+                        f.write(str(confusion[r][c]))
+                        if c == (args.output_dim - 1):
+                            f.write("\n")
+                        else:
+                            f.write("\t")
+            with open(outputdir + "log_valid_macro.txt", "+a") as f:               
+                f.write("{} epoch:Test Loss:{} ({}, {})/Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(epoch, eval_loss, eval_ce_loss, recon_loss, accuracy,precision,recall,f1))
+
+            if best_eval_acc < eval_acc:
+                print(best_eval_acc)
+                best_eval_acc = eval_acc
+                patience = 0
+                if args.evaltype == "test" or args.save_epochs > 0:
+                    print("Model Save")
+                    modelsavename = outputdir + "embedder.pt"
+                    torch.save(embedder.state_dict(), modelsavename)
+                    scorersavename = outputdir + "scorer.pt"
+                    torch.save(scorer.state_dict(), scorersavename)
+                    initembeddersavename = outputdir + "initembedder.pt"
+                    torch.save(initembedder.state_dict(),initembeddersavename)
+            else:
+                patience += 1
+
+            if patience > args.patience:
+                break
+            
+            gc.collect()
+            torch.cuda.empty_cache()
+            del hembedding, vembedding, input_embeddings, predictions, pred_cls, eval_acc, eval_loss
 
 nodes = torch.LongTensor(range(data.numnodes)).to(device)
 if args.evaltype == "test":
@@ -288,13 +324,14 @@ if args.evaltype == "test":
     initembedder.eval()
     embedder.eval()
     scorer.eval()
-
+    
     with torch.no_grad():
         v_feat, recon_loss = initembedder(nodes)
-        e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
         if args.embedder == "hcha":
+            e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
             v, e = embedder(g, v_feat, e_feat, data.DV2, data.invDE)
         elif args.embedder == "hnn":
+            e_feat = torch.zeros((data.numhedges, args.input_vdim)).to(device)
             v, e = embedder(g, v_feat, e_feat, data.invDV, data.invDE, data.vMat, data.eMat)
         
         hembedding = e[test_edata]

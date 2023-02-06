@@ -32,7 +32,8 @@ from model.HNHN import HNHN
 from model.HGNN import HGNN
 from model.HAT import HyperAttn
 from model.UniGCN import UniGCNII
-from model.Transformer import Transformer, TransformerLayer
+from model.Whatsnet import Whatsnet, WhatsnetLayer
+from model.WhatsnetClassifier import WhatsnetClassifier
 from model.layer import FC, Wrap_Embedding
 
 import shutil
@@ -40,8 +41,10 @@ import shutil
 # Make Output Directory --------------------------------------------------------------------
 initialization = "rw"
 args = utils.parse_args()
-outputdir = "results_test/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/" + args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/" # temporary!!!!
-savedir = "result/" + args.dataset_name + "_" + str(args.k) + "/" + initialization + "/" + args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
+outputdir = "results_test/" + args.dataset_name + "_" + str(args.k)  + "/" + args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
+savedir = "AnalysisResult/" + args.dataset_name + "_" + str(args.k) + "/" + args.model_name + "/" + args.param_name +"/" + str(args.seed) + "/"
+
+assert args.embedder == "whatsnet"
 
 print("OutputDir = " + outputdir)
 print("SaveDir = " + savedir)
@@ -100,13 +103,15 @@ data = dl.Hypergraph(args, dataset_name)
 target_data = data.get_data(2)
 
 ls = [{('node', 'in', 'edge'): -1, ('edge', 'con', 'node'): -1}] * (args.num_layers * 2 + 1)
-if args.orderflag:
+if data.weight_flag:
     g = gen_weighted_DGLGraph(args, data.hedge2node, data.hedge2nodePE, data.hedge2nodepos, data.node2hedge, data.node2hedgePE, device)
 else:
     g = gen_DGLGraph(args, data.hedge2node, data.hedge2nodepos, data.node2hedge, device)
-
-sampler = dgl.dataloading.MultiLayerNeighborSampler(ls, False)
-dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": target_data}, sampler, batch_size=128, shuffle=False, drop_last=False)
+try:
+    sampler = dgl.dataloading.NeighborSampler(ls)
+except:
+    sampler = dgl.dataloading.MultiLayerNeighborSampler(ls, False)
+dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": target_data}, sampler, batch_size=256, shuffle=True, drop_last=False)
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)
 
@@ -153,20 +158,20 @@ initembedder = initembedder.to(device)
 print("Model:", args.embedder)
 # model init
 if args.embedder == "hnhn":
-    embedder = HNHN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.use_efeat, args.num_layers, args.dropout).to(device)
+    embedder = HNHN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hgnn":
     embedder = HGNN(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, args.num_layers, args.dropout).to(device)
 elif args.embedder == "hat":
-    embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)
+    embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
-elif args.embedder == "transformer":    
+elif args.embedder == "whatsnet":    
     input_vdim = args.input_vdim
-    pos_dim = 0
-    embedder = Transformer(TransformerLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
-                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, pos_dim=pos_dim,
+    pe_ablation_flag = args.pe_ablation
+    embedder = Whatsnet(WhatsnetLayer, input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
                            att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
-                           num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
+                           num_att_layer=args.num_att_layer, dropout=args.dropout, weight_flag=data.weight_flag, pe_ablation_flag=pe_ablation_flag, vis_flag=args.analyze_att).to(device)
     
 embedder.load_state_dict(torch.load(outputdir + "embedder.pt"))
 embedder = embedder.to(device)
@@ -174,7 +179,9 @@ embedder = embedder.to(device)
 # pick scorer
 if args.scorer == "sm":
     scorer = FC(args.dim_vertex + args.dim_edge, args.dim_edge, args.output_dim, args.scorer_num_layers, args.dropout).to(device)
-
+elif args.scorer == "wc": #whatsnet
+    scorer = WhatsnetClassifier(args.dim_vertex, args.output_dim, dim_hidden=args.dim_hidden, num_layer=args.scorer_num_layers).to(device)
+    
 scorer.load_state_dict(torch.load(outputdir + "scorer.pt"))
 scorer = scorer.to(device)
 
@@ -194,41 +201,41 @@ with torch.no_grad():
         nodeindices = blocks[-1].srcdata[dgl.NID]['node'][srcs]
         hedgeindices_in_batch = dsts.to(device)
         hedgeindices = blocks[-1].srcdata[dgl.NID]['edge'][dsts]
-        nodelabels = blocks[-1].edges[('node','in','edge')].data['label'].to(device)
-
-        # Get Embedding
-        if args.embedder == "hnhn": # or args.embedder == "hnhn":
-            v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
-            e_feat = data.e_feat[input_nodes['edge']].to(device)
-            v_reg_weight = data.v_reg_weight[input_nodes['node']].to(device)
-            v_reg_sum = data.v_reg_sum[input_nodes['node']].to(device)
-            e_reg_weight = data.e_reg_weight[input_nodes['edge']].to(device)
-            e_reg_sum = data.e_reg_sum[input_nodes['edge']].to(device)
-            v, e = embedder(blocks, v_feat, e_feat, v_reg_weight, v_reg_sum, e_reg_weight, e_reg_sum)
-        elif args.embedder == "hgnn":
-            v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
-            e_feat = data.e_feat[input_nodes['edge']].to(device)
-            DV2 = data.DV2[input_nodes['node']].to(device)
-            invDE = data.invDE[input_nodes['edge']].to(device)
-            v, e = embedder(blocks, v_feat, e_feat, DV2, invDE)
-        elif args.embedder == "unigcnii":
-            v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
-            e_feat = data.e_feat[input_nodes['edge']].to(device)
-            degV = data.degV[input_nodes['node']].to(device)
-            degE = data.degE[input_nodes['edge']].to(device)
-            v, e = embedder(blocks, v_feat, e_feat, degE, degV)
-        else:
-            v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
-            e_feat = data.e_feat[input_nodes['edge']].to(device)
-            v, e = embedder(blocks, v_feat, e_feat)
-
-        # Final Embedding
-        hembedding = e[hedgeindices_in_batch]
-        vembedding = v[nodeindices_in_batch]
-        input_embeddings = torch.cat([hembedding,vembedding], dim=1)
-        predictions = scorer(input_embeddings)
-        predictions = torch.argmax(predictions, dim=1)
+        hedgeindices = dsts.to(device)
+        nodelabels = blocks[-1].edges[('node','in','edge')].data['label'].long().to(device)
         
+        # Get Embedding
+        # Get Embedding
+        if args.embedder == "whatsnet":
+            if batch_index > 5:
+                embedder.off_vis_flag()
+            else:
+                embedder.set_savename(savedir, batch_index)
+                
+            if args.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
+                vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
+                v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
+                e_feat = data.e_feat[input_nodes['edge']].to(device)
+                v, e = embedder(blocks, v_feat, e_feat, vindex)
+            else:
+                v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
+                e_feat = data.e_feat[input_nodes['edge']].to(device)
+                v, e = embedder(blocks, v_feat, e_feat)
+        else:
+                v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
+                e_feat = data.e_feat[input_nodes['edge']].to(device)
+                v, e = embedder(blocks, v_feat, e_feat)
+                
+        # Predict Class
+        if args.scorer == "sm":
+            hembedding = e[hedgeindices_in_batch]
+            vembedding = v[nodeindices_in_batch]
+            input_embeddings = torch.cat([hembedding,vembedding], dim=1)
+            predictions = scorer(input_embeddings)
+        elif args.scorer == "wc":
+            predictions, nodelabels = scorer(blocks[-1], v, e)
+        
+#         if batch_index <= 5:
         save_data = {
             "hembedding": hembedding.detach().cpu(),
             "vembedding" : vembedding.detach().cpu(),
