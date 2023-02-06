@@ -15,7 +15,7 @@ do
     # UniGCNII
     python train.py --dataset_name StackOverflowPhysics --embedder unigcnii --num_layers 2 --scorer sm --scorer_num_layers 1 --bs 64 --lr 0.001 --sampling 100 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --evaltype test --save_epochs 1 --seed ${seed} --fix_seed
     # HNN
-    python train_full_batch.py --dataset_name ${data} --embedder hnn --psi_num_layers 1 --efeat avg --num_layers 1 --scorer sm --scorer_num_layers 1 --lr 0.01 --sampling -1 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 300 --test_epoch 5 --evaltype test --save_epochs 1 --seed ${seed} --fix_seed
+    python train_full_batch.py --dataset_name StackOverflowPhysics --embedder hnn --psi_num_layers 1 --efeat avg --num_layers 1 --scorer sm --scorer_num_layers 1 --lr 0.01 --sampling -1 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 300 --test_epoch 5 --evaltype test --save_epochs 1 --seed ${seed} --fix_seed
     # HST
     python train.py --dataset_name StackOverflowPhysics --embedder whatsnet --att_type_v pure --agg_type_v pure --att_type_e pure --agg_type_e pure --num_att_layer 2 --num_layers 2 --scorer sm --scorer_num_layers 1 --bs 64 --lr 0.0001 --sampling 40 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --evaltype test --save_epochs 1 --seed ${seed} --fix_seed
     # AST
