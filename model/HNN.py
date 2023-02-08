@@ -17,7 +17,8 @@ class HNNLayer(nn.Module):
                     feat_drop=0, 
                     num_psi_layer=1,
                     activation=None,
-                    printflag=False, 
+                    printflag=False,
+                    firstlayerflag=False,
                     outputdir=""):
         super(HNNLayer, self).__init__()
            
@@ -28,6 +29,7 @@ class HNNLayer(nn.Module):
         self.num_psi_layer = num_psi_layer
         self.feat_drop = nn.Dropout(feat_drop)
         self.activation = activation
+        self.firstlayerflag = firstlayerflag
         
         self.weight_v = nn.Linear(input_vdim, output_vdim, bias=False)
         self.weight_e = nn.Linear(input_edim, output_edim, bias=False)
@@ -48,7 +50,6 @@ class HNNLayer(nn.Module):
         nn.init.xavier_normal_(self.weight_v.weight, gain=gain)
         nn.init.xavier_normal_(self.weight_e.weight, gain=gain)
         for layer1, layer2 in zip(self.psi_1, self.psi_2):
-#             print("psi weight", layer1.weight.shape)
             nn.init.xavier_normal_(layer1.weight, gain=gain)
             nn.init.xavier_normal_(layer2.weight, gain=gain)
         
@@ -59,19 +60,11 @@ class HNNLayer(nn.Module):
         E = nodes.mailbox['e']
         V = nodes.mailbox['v']
         W = nodes.mailbox['weight']
-#         print("V", V.shape)
-#         print("E", E.shape)
         v = torch.cat([V, E], dim=2)
-#         print("v", v.shape)
         for psi_layer in self.psi_1:
-#             print(psi_layer.weight.shape)
             v = psi_layer(v)
-#         print("psi1 v", v.shape, "psi1 w", W.shape)
-#         print(v[0][0])
-#         print(W[0])
         v = v * W.unsqueeze(-1)
-#         print(v[0][0])
-        o = torch.sum(v, dim=1)
+        o = torch.mean(v, dim=1)
         return {'o': o}
     
     def v_reduce_psi2(self, nodes):
@@ -82,7 +75,7 @@ class HNNLayer(nn.Module):
         v = torch.cat([V, E], dim=2)
         for psi_layer in self.psi_2:
             v = psi_layer(v)
-        o = torch.sum(v, dim=1)
+        o = torch.mean(v, dim=1)
         return {'o': o}
     
     def message_func(self, edges):
@@ -90,11 +83,18 @@ class HNNLayer(nn.Module):
     
     def reduce_func(self, nodes):
         feat = nodes.mailbox['ft']
-        o = torch.sum(feat, dim=1)
+        o = torch.mean(feat, dim=1)
         return {'o': o}
     
     def forward(self, g, vfeat, efeat, invDV, invDE, vMat, eMat):
         with g.local_scope():
+            if self.firstlayerflag:
+                _vfeat = vfeat * invDV.view(-1,1)
+                g['in'].srcdata.update({'dv': torch.ones_like(invDV), 'feat': _vfeat})
+                g['in'].dstdata.update({'feat': efeat})
+                g['in'].update_all(self.message_func, self.reduce_func, etype='in')
+                efeat = g['in'].dstdata['o']
+                efeat = efeat * torch.pow(invDE, -1).view(-1,1)
             vfeat = self.feat_drop(vfeat)
             efeat = self.feat_drop(efeat)
             
@@ -102,8 +102,6 @@ class HNNLayer(nn.Module):
             g['in'].dstdata.update({'feat': efeat})
             g['in'].update_all(self.v_message_psi_func, self.v_reduce_psi1, etype='in')
             A = g['in'].dstdata['o']
-#             print ("A", A.shape)
-#             print(A[0])
             A = torch.sparse.mm(eMat, A)
             _efeat = A + efeat
             g['con'].srcdata.update({'feat': _efeat})
@@ -112,21 +110,23 @@ class HNNLayer(nn.Module):
             _vfeat = self.weight_v(_vfeat)
             vfeat = self.activation(_vfeat)
             
-            g['in'].srcdata.update({'dv': torch.ones_like(invDV), 'feat': vfeat})
+            g['in'].srcdata.update({'feat': vfeat})
             g['in'].dstdata.update({'feat': efeat})
             g['in'].update_all(self.v_message_psi_func, self.v_reduce_psi2, etype='in')
             B = g['in'].dstdata['o']
-            B = B * invDE.view(-1,1)
-            g['con'].srcdata.update({'feat' : efeat})
+            _efeat = efeat * invDE.view(-1,1)
+            g['con'].srcdata.update({'feat' : _efeat})
             g['con'].update_all(self.message_func, self.reduce_func, etype='con')
             _vfeat = g['con'].dstdata['o']
             _vfeat = torch.sparse.mm(vMat, _vfeat)
-            g['in'].srcdata.update({'dv': torch.ones_like(invDV), 'feat': _vfeat})
+            g['in'].srcdata.update({'feat': _vfeat})
             g['in'].update_all(self.message_func, self.reduce_func, etype='in')
             _efeat = g['in'].dstdata['o']
             _efeat = _efeat + B
             _efeat = self.weight_e(_efeat)
             efeat = self.activation(_efeat)
+            
+            del A, B, _efeat, _vfeat
             
         return [vfeat, efeat]
 
@@ -139,7 +139,8 @@ class HNN(nn.Module):
                  edge_dim,
                  num_psi_layer=1,
                  num_layers=3,
-                 feat_drop=0.6):
+                 feat_drop=0.6,
+                 avginit=False):
         super(HNN, self).__init__()
         
         self.activation = F.relu
@@ -147,11 +148,11 @@ class HNN(nn.Module):
         self.layers = nn.ModuleList()
                        
         if num_layers == 1:
-             self.layers.append(HNNLayer(input_vdim, input_edim, vertex_dim, edge_dim, num_psi_layer=num_psi_layer, feat_drop=0., activation=self.activation))
+             self.layers.append(HNNLayer(input_vdim, input_edim, vertex_dim, edge_dim, num_psi_layer=num_psi_layer, feat_drop=0., activation=self.activation, firstlayerflag=avginit))
         else:
             for i in range(num_layers):
                 if i == 0:
-                    self.layers.append(HNNLayer(input_vdim, input_edim, hidden_dim, hidden_dim, num_psi_layer=num_psi_layer, feat_drop=0., activation=self.activation))
+                    self.layers.append(HNNLayer(input_vdim, input_edim, hidden_dim, hidden_dim, num_psi_layer=num_psi_layer, feat_drop=0., activation=self.activation, firstlayerflag=avginit))
                 elif i == (num_layers - 1):
                     self.layers.append(HNNLayer(hidden_dim, hidden_dim,vertex_dim, edge_dim, num_psi_layer=num_psi_layer, feat_drop=feat_drop, activation=self.activation))
                 else:
