@@ -1,5 +1,5 @@
 cd ..
-seedlist=("0" "10" "100" "500" "10000")
+seedlist=("0") # "10" "100" "500" "10000")
 for seed in ${seedlist[@]}
 do
     # BaselineU and BaselineP
@@ -27,5 +27,5 @@ do
     # WHATsNET w/o WithinATT
     python train.py --dataset_name StackOverflowBiology --embedder whatsnet --att_type_v NoAtt --agg_type_v PrevQ --att_type_e NoAtt --agg_type_e PrevQ --num_layers 2 --scorer sm --scorer_num_layers 1 --bs 128 --lr 0.001 --sampling 40 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --evaltype test --save_epochs 1 --seed ${seed} --fix_seed
     # WHATsNET-IM
-    python train.py --dataset_name StackOverflowBiology --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" --embedder whatsnet --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ --num_att_layer 2 --num_layers 2 --scorer wc --scorer_num_layers 1 --bs 64 --lr 0.0001 --sampling 40 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --evaltype test --fix_seed --seed ${seed} --save_epochs 1
+    python train.py --dataset_name StackOverflowBiology --vorder_input "degree_nodecentrality,eigenvec_nodecentrality,pagerank_nodecentrality,kcore_nodecentrality" --embedder whatsnet --att_type_v OrderPE --agg_type_v PrevQ --att_type_e OrderPE --agg_type_e PrevQ --num_att_layer 2 --num_layers 2 --scorer im --scorer_num_layers 1 --bs 64 --lr 0.0001 --sampling 40 --dropout 0.7 --optimizer "adam" --k 0 --gamma 0.99 --dim_hidden 64 --dim_edge 128 --dim_vertex 128 --epochs 100 --test_epoch 5 --evaltype test --fix_seed --seed ${seed} --save_epochs 1
 done
