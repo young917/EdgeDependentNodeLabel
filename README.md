@@ -103,9 +103,9 @@ We also provide shell scripts for all-in-one process (train, predict and evaluat
 
 You can run three downstream tasks with WHATsNET and baselines by
 
-* Ranking Aggregation: In the `RankingAggregation` directory, run `ranking.py` for Halo2 game dataset and run `aminer_ranking.py` for AMiner dataset with author H-index
-* Clustering: In the `Clustering` directory, run `clustering.py` for DBLP and run `clustering_aminer.py` for AMiner
-* Product Return Prediction: In the `ProductReturnPred` directory, make synthetic dataset by `makedata/Simulate data.ipynb` and prepare dataset for training models by our benchmark task through `makedata/MakeHypergraph.ipynb`. After training models, run `makedata/prepare_predicted.py` and evaluate them by `script/main_prod.py`
+* **Ranking Aggregation**: In the `RankingAggregation` directory, run `ranking.py` for Halo2 game dataset and run `aminer_ranking.py` for AMiner dataset with author H-index
+* **Clustering**: In the `Clustering` directory, run `clustering.py` for DBLP and run `clustering_aminer.py` for AMiner
+* **Product Return Prediction**: In the `ProductReturnPred` directory, make synthetic dataset by `makedata/Simulate data.ipynb` and prepare dataset for training models by our benchmark task through `makedata/MakeHypergraph.ipynb`. After training models, run `makedata/prepare_predicted.py` and evaluate them by `script/main_prod.py`
 
 ### Run Ablation Studies
 
