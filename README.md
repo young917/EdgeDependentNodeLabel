@@ -98,7 +98,8 @@ We set hyperparameters of each model chosen by the best mean of Micro-F1 and Mac
 ### Run Downstream Tasks
 
 We provide edge-dependent node labels predicted by WHATsNET as well as AST and HST in `train_results/`
-We also provide shell script for all-in-one (train, predict and evaluate on the downstream task) in `run/DownstreamTask/`
+
+We also provide shell scripts for all-in-one process (train, predict and evaluate on the downstream task) in `run/DownstreamTask/`
 
 You can run three downstream tasks with WHATsNET and baselines by
 #### Ranking Aggregation
