@@ -4,6 +4,7 @@ import time
 import random
 import pickle
 import tqdm
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,6 +21,11 @@ from copy import deepcopy
 from collections import defaultdict
 
 import trueskill
+import argparse
+
+parser = argparse.ArgumentParser(description='Argparse Tutorial')
+parser.add_argument('--outputpath', type=str, default="our_0")
+args = parser.parse_args()
 
 # randomwalk function ----------------------------------------------------------------------------------------------------
 def compute_pr(P, r, n, eps=1e-8):
@@ -308,28 +314,6 @@ Pd = Pd.T
 r=0.40
 rankings_mc3 = compute_pr(Pd, r, len(universe), eps=1e-8).flatten()
 
-# TrueSkill -----------------------------------------------------------------------------------------------------------------------
-# simulate the change in TrueSkill ratings when a Free-For-All match is played
-# print("TrueSkill Ranking ---------------")
-# def play_match(match, ts_ranking):
-#     p, s = match
-#     cur_ranks = []
-#     for player in p:
-#         if player in ts_ranking:
-#             cur_ranks.append([ts_ranking[player]])
-#         else:
-#             cur_ranks.append([trueskill.Rating()])
-#     # lower rank = better player for trueskill.rate function, so we turn scores into -1*scores
-#     match_res = trueskill.rate(cur_ranks, ranks=[-1*i for i in s])
-#     for i in range(len(p)):
-#         player = p[i]
-#         ts_ranking[player] = match_res[i][0]
-# trueskill_rankings={} # dict mapping player -> TrueSkill rating object
-# # simulate all matches being played, in order
-# for paper in papers:
-#     play_match(paper, trueskill_rankings)
-# rankings_ts = [trueskill_rankings[author].mu for author in authors] # deterministic TrueSkill ratings list
-
 # Uniform Weight Ranking (w/o Label) ----------------------------------------------------------------------------------------------
 print("Uniform Weight Ranking ---------------")
 pi_list = papers
@@ -374,9 +358,9 @@ universe = np.array(list(authors))
 numhedges = len(pi_list)
 numnodes = len(universe)
 
-outputdir = "../train_results/AMiner/"
+outputdir = "../train_results/AMiner_rank/"
 predict_scores = []
-with open(outputdir + "prediction.txt", "r") as f:
+with open(outputdir + "prediction_{}.txt".format(args.outputpath), "r") as f:
     for line in f.readlines():
         tmp = line.rstrip().split("\t")
         scores = []
@@ -435,7 +419,7 @@ print('Hypergraph w/ GroundTruth accuracy: {}'.format(results_hg))
 print('Clique Graph accuracy: {}'.format(results_gh))
 print('Dwork MC3 accuracy: {}'.format(results_mc3))
 print('Hypergraph w/o Labels accuracy: {}'.format(results_unif))
-print('Hypergraph w/ WHATsNet accuracy: {}'.format(results_bw))
+print('Hypergraph w/ {} accuracy: {}'.format(args.outputpath, results_bw))
 print()
 
 results_hg = scipy.stats.spearmanr(true_rankings, rankings_hg)
@@ -448,7 +432,7 @@ print('Hypergraph w/ GroundTruth ', results_hg)
 print('Clique Graph accuracy ', results_gh)
 print('Dwork MC3 accuracy ', results_mc3)
 print('Hypergraph w/o Labels accuracy ', results_unif)
-print('Hypergraph w/ WHATsNet accuracy ', results_bw)
+print('Hypergraph w/ {} accuracy '.format(args.outputpath), results_bw)
 print()
 
 # Evaluation ----------------------------------------------------------------------------------------------------------------------
@@ -481,6 +465,7 @@ results_hg=0
 results_gh=0
 results_unif=0
 results_bw=0
+results_mc=0
 
 total = 0
 
@@ -502,6 +487,9 @@ for ai in tqdm.trange(len(authors)):
         pred_gh = rankings_gh[author_i] - rankings_gh[author_j]
         if ans_rank_diff * pred_gh > 0:
             results_gh += 1
+        pred_mc = rankings_mc3[author_i] - rankings_mc3[author_j]
+        if ans_rank_diff * pred_mc > 0:
+            results_mc += 1
         pred_unif = rankings_unif[author_i] - rankings_unif[author_j]
         if ans_rank_diff * pred_unif > 0:
             results_unif += 1
@@ -512,4 +500,14 @@ for ai in tqdm.trange(len(authors)):
 print('Hypergraph w/ GroundTruth accuracy: {}'.format(results_hg / total))
 print('Clique Graph accuracy: {}'.format(results_gh / total))
 print('Hypergraph w/o Labels accuracy: {}'.format(results_unif / total))
-print('Hypergraph w/ WHATsNet accuracy: {}'.format(results_bw / total))
+print('Hypergraph w/ {} accuracy: {}'.format(args.outputpath, results_bw / total))
+print('MC3 accuracy: {}'.format(results_mc / total))
+
+predict_score = results_bw / total
+if os.path.isdir("../train_results/AMiner_rank/resR1/") is False:
+    os.makedirs("../train_results/AMiner_rank/resR1/")
+outputname = args.outputpath.split("_")[0]
+seed = args.outputpath.split("_")[1]
+with open("../train_results/AMiner_rank/resR1/{}.txt".format(outputname), "+a") as f:
+    f.write(",".join([seed, str(predict_score)]) + "\n")
+    
