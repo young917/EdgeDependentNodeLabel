@@ -34,6 +34,7 @@ from model.HAT import HyperAttn
 from model.UniGCN import UniGCNII
 from model.Whatsnet import Whatsnet, WhatsnetLayer
 from model.WhatsnetIM import WhatsnetIM
+from model.WhatsnetLSPE import WhatsnetLSPE, WhatsnetLSPELayer
 from model.WhatsnetHAT import WhatsnetHAT, WhatsnetHATLayer
 from model.WhatsnetHNHN import WhatsnetHNHN, WhatsnetHNHNLayer
 from model.layer import FC, Wrap_Embedding
@@ -88,6 +89,12 @@ def run_epoch(args, data, dataloader, initembedder, embedder, scorer, optim, sch
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
+        elif args.embedder == "whatsnetLSPE":
+            v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
+            e_feat = data.e_feat[input_nodes['edge']].to(device)
+            v_pos = data.v_pos[input_nodes['node']].to(device)
+            e_pos = data.e_pos[input_nodes['edge']].to(device)
+            v, e = embedder(blocks, v_feat, e_feat, v_pos, e_pos)
         elif args.embedder == "whatsnet":
             if args.att_type_v in ["ITRE", "ShawRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
@@ -186,6 +193,12 @@ def run_test_epoch(args, data, testdataloader, initembedder, embedder, scorer, l
             degV = data.degV[input_nodes['node']].to(device)
             degE = data.degE[input_nodes['edge']].to(device)
             v, e = embedder(blocks, v_feat, e_feat, degE, degV)
+        elif args.embedder == "whatsnetLSPE":
+            v_feat, recon_loss = initembedder(input_nodes['node'].to(device))
+            e_feat = data.e_feat[input_nodes['edge']].to(device)
+            v_pos = data.v_pos[input_nodes['node']].to(device)
+            e_pos = data.e_pos[input_nodes['edge']].to(device)
+            v, e = embedder(blocks, v_feat, e_feat, v_pos, e_pos)
         elif args.embedder == "whatsnet":
             if args.att_type_v in ["ITRE", "ShawRE", "RafRE"]:
                 vindex = torch.arange(len(input_nodes['node'])).unsqueeze(1).to(device)
@@ -339,6 +352,7 @@ if args.evaltype == "test":
 
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)
+args.order_dim = data.order_dim
 
 # init embedder
 args.input_vdim = 48
@@ -389,6 +403,11 @@ elif args.embedder == "hat":
     embedder = HyperAttn(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, weight_dim=0, num_layer=args.num_layers, dropout=args.dropout).to(device)   
 elif args.embedder == "unigcnii":
     embedder = UniGCNII(args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, num_layer=args.num_layers, dropout=args.dropout).to(device)
+elif args.embedder == "whatsnetLSPE":
+    embedder = WhatsnetLSPE(WhatsnetLSPELayer, args.input_vdim, args.input_edim, args.dim_hidden, args.dim_vertex, args.dim_edge, 
+                           weight_dim=args.order_dim, num_heads=args.num_heads, num_layers=args.num_layers, num_inds=args.num_inds,
+                           att_type_v=args.att_type_v, agg_type_v=args.agg_type_v, att_type_e=args.att_type_e, agg_type_e=args.agg_type_e,
+                           num_att_layer=args.num_att_layer, dropout=args.dropout).to(device)
 elif args.embedder == "whatsnet":    
     input_vdim = args.input_vdim
     pe_ablation_flag = args.pe_ablation

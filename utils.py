@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('--analyze_att', action='store_true') # analyze attention
     parser.add_argument('--recalculate', action='store_true')
     parser.add_argument('--n_trials', default=50, type=int)
+    parser.add_argument('--outputname', default="", type=str)
 
     # training parameter
     parser.add_argument('--bs', default=64, type=int)
@@ -64,6 +65,7 @@ def parse_args():
     parser.add_argument('--pe', default='', type=str, help="positional encoding option for ITRE, ShawRE; KD, KPRW")
     parser.add_argument('--efeat', default='zero', type=str, help="initialize for hyperedge embedding")
     parser.add_argument('--vorder_input', default='', type=str, help="positional encoding input for OrderPE")
+    parser.add_argument('--eorder_input', default='', type=str, help="positional encoding input for OrderPE")
     parser.add_argument('--whole_order', action='store_true')
     
     # model parameter
@@ -99,10 +101,21 @@ def parse_args():
     else:
         args.vorder_input = args.vorder_input.split(",")
         args.orderflag = True
+    if len(args.eorder_input) == 0:
+        args.eorder_input = []
+    else:
+        args.eorder_input = args.eorder_input.split(",")
     args.order_dim = len(args.vorder_input)
     
     # Setting File Save Name -----------------------------------------------------------------------------
     args.embedder_name = args.embedder
+    
+    if args.embedder == "whatsnetLSPE":
+        if len(args.vorder_input) == 0:
+            args.embedder_name += "rw"
+        else:
+            args.embedder_name += "ct"
+            
     if len(args.att_type_v) > 0 and len(args.agg_type_v) > 0:
         args.embedder_name += "-{}-{}".format(args.att_type_v, args.agg_type_v)
     if len(args.att_type_e) > 0 and len(args.agg_type_e) > 0:
@@ -130,9 +143,12 @@ def parse_args():
     elif args.pe_ablation and args.att_type_v == "OrderPE":
         args.param_name += "_pe_sab"
         
-    if len(args.vorder_input) == 1:
+    if len(args.vorder_input) == 1 or len(args.eorder_input) > 0:
         tmp = args.vorder_input[0].split("_")[0]
         args.param_name += "_vo_{}".format(tmp)
+    elif len(args.vorder_input) > 11:
+        args.param_name += "_vo_total"
+                
     # ---------------------------------------------------------------------------------------------------
     return args
 
