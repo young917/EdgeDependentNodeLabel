@@ -4,12 +4,12 @@ import pandas as pd
 import os
 
 class SplitTrainValidateTest:
-    def __init__(self, train_rate, validate_rate, unif_flag=False, model_flag=False):
+    def __init__(self, train_rate, validate_rate, unif_flag=False, model=""):
         self.train_rate = train_rate
         self.validate_rate = validate_rate
         self.test_rate = 1-train_rate-validate_rate
         self.unif_flag = unif_flag
-        self.model_flag = model_flag
+        self.model = model
 
     def read_data(self, src_folder='data/'):
         
@@ -25,8 +25,8 @@ class SplitTrainValidateTest:
                 self.h = pickle.load(f)
             with open(src_folder + "r_unif_mat.pkl", 'rb') as f:
                 self.r = pickle.load(f)
-        elif self.model_flag:
-            with open(src_folder + "h_WHATsNet_mat.pkl", 'rb') as f:
+        elif len(self.model) > 0:
+            with open(src_folder + "h_{}_mat.pkl".format(self.model), 'rb') as f:
                 self.h = pickle.load(f)
 
             with open(src_folder + "r_mat.pkl", 'rb') as f:
