@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description='Argparse Tutorial')
 parser.add_argument('--inputdir', type=str, default="../downstreamdata/")
 parser.add_argument('--dataname', type=str, default="DBLP_cat")
 parser.add_argument('--notexist_hedgename', action='store_true')
-parser.add_argument('--predict_path', type=str, default="../train_results/DBLP_cat/")
+parser.add_argument('--predict_path', type=str, default="") # "our_0"
 parser.add_argument('--n_cluster', type=int, default=4)
 args = parser.parse_args()
 
@@ -85,7 +85,8 @@ with open(args.inputdir + dataname + "/hypergraph_pos.txt", "r") as f:
             hedge2nodepos[hidx].append(nodepos)
             
 if len(args.predict_path) > 0:
-    with open(args.predict_path + "/prediction.txt", "r") as f:
+    path = "../train_results/{}/prediction_{}.txt".format(args.dataname, args.predict_path)
+    with open(path, "r") as f:
         for _hidx, line in enumerate(f.readlines()):
             tmp = line.split("\t")
             hidx = _hidx
@@ -201,3 +202,12 @@ print("Hypergraph w/ WHATsNet\t\t{}\n".format(predict_score))
 print("Hypergraph w/o Labels\t\t{}\n".format(nolab_score))
 print("Random\t\t{}\n".format(rand_score))
 print()
+
+# path = "../train_results/{}/prediction_{}.txt".format(args.dataname, args.predict_path)
+if os.path.isdir("../train_results/{}/res/".format(args.dataname)) is False:
+    os.makedirs("../train_results/{}/res/".format(args.dataname))
+outputname = args.predict_path.split("_")[0]
+seed = args.predict_path.split("_")[1]
+with open("../train_results/{}/res/{}.txt".format(args.dataname, outputname), "+a") as f:
+    f.write(",".join([seed, str(predict_score)]) + "\n")
+        
