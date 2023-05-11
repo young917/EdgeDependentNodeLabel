@@ -260,6 +260,8 @@ with torch.no_grad():
                     assert vlab == data.hedge2nodepos[h][vorder]
             if args.binning > 0:
                 allpredictions[h][v] = data.binindex[int(vpred)]
+            elif args.dataset_name == "Etail":
+                allpredictions[h][v] = int(vpred) + 1.0
             else:
                 allpredictions[h][v] = int(vpred)
         num_data += predictions.shape[0]
@@ -270,10 +272,10 @@ with torch.no_grad():
     eval_acc = torch.eq(pred_cls, total_label).sum().item() / len(total_label)
     y_test = total_label.cpu().numpy()
     pred = pred_cls.cpu().numpy()
-    confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='micro', outputdim=args.output_dim)
+    confusion, accuracy, precision, recall, f1_micro = utils.get_clf_eval(y_test, pred, avg='micro', outputdim=args.output_dim)
     with open(outputdir + "all_micro.txt", "w") as f:
-        f.write("Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(accuracy,precision,recall,f1))
-    confusion, accuracy, precision, recall, f1 = utils.get_clf_eval(y_test, pred, avg='macro', outputdim=args.output_dim)
+        f.write("Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(accuracy,precision,recall,f1_micro))
+    confusion, accuracy, precision, recall, f1_macro = utils.get_clf_eval(y_test, pred, avg='macro', outputdim=args.output_dim)
     with open(outputdir + "all_confusion.txt", "w") as f:
         for r in range(args.output_dim):
             for c in range(args.output_dim):
@@ -283,7 +285,7 @@ with torch.no_grad():
                 else:
                     f.write("\t")
     with open(outputdir + "all_macro.txt", "w") as f:               
-        f.write("Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(accuracy,precision,recall,f1))
+        f.write("Accuracy:{}/Precision:{}/Recall:{}/F1:{}\n".format(accuracy,precision,recall,f1_macro))
         
     with open(outputdir + "prediction.txt", "w") as f:
         for h in range(data.numhedges):
@@ -291,3 +293,22 @@ with torch.no_grad():
             for v in data.hedge2node[h]:
                 line.append(str(allpredictions[h][v]))
             f.write("\t".join(line) + "\n")
+            
+    # output
+    if os.path.isdir("train_results/{}/".format(args.dataset_name)) is False:
+        os.makedirs("train_results/{}/".format(args.dataset_name))
+    with open("train_results/{}/prediction_{}_{}.txt".format(args.dataset_name, args.outputname, args.seed), "w") as f:
+        for h in range(data.numhedges):
+            line = []
+            for v in data.hedge2node[h]:
+                line.append(str(allpredictions[h][v]))
+            f.write("\t".join(line) + "\n")
+            
+    if os.path.isdir("train_results/{}/f1/".format(args.dataset_name)) is False:
+        os.makedirs("train_results/{}/f1/".format(args.dataset_name))
+    if os.path.isfile("train_results/{}/f1/{}.txt".format(args.dataset_name, args.outputname)) is False:
+        with open("train_results/{}/f1/{}.txt".format(args.dataset_name, args.outputname), "w") as f:
+            f.write("seed,f1micro,f1macro\n")
+    with open("train_results/{}/f1/{}.txt".format(args.dataset_name, args.outputname), "+a") as f:
+        f.write(",".join([str(args.seed), str(f1_micro), str(f1_macro)]) + "\n")
+ 
