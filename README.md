@@ -1,8 +1,8 @@
-# Classification of Edge-dependent Labels of Nodes: Formulation, Models, and Benchmark Datasets
+# Classification of Edge-dependent Labels of Nodes in Hypergraphs
 
-We provide (1) benchmark datasets and source code for (2) benchmark task, (3) downstream task and (4) ablation study of WHATsNET
+We provide (1) datasets and source code for (2) benchmark task, (3) downstream task and (4) ablation study of WHATsNET
 
-(1) **Benchmark Datasets**
+(1) **Datasets**
 
 We provide six real-world datasets for our new benchmark task(```/dataset/```) and preprocessing code (```/dataset/PreprocessCode/```)
 
@@ -97,13 +97,14 @@ We set hyperparameters of each model chosen by the best mean of Micro-F1 and Mac
 
 ### Run Downstream Tasks
 
-We provide edge-dependent node labels predicted by WHATsNET in `train_results/`
+We provide edge-dependent node labels predicted by WHATsNET as well as AST and HST in `train_results/`
+We also provide shell script for all-in-one (train, predict and evaluate on the downstream task) in `run/DownstreamTask/`
 
 You can run three downstream tasks with WHATsNET and baselines by
 #### Ranking Aggregation
 In the `RankingAggregation` directory, 
 
-For Halo2 game dataset, run `ranking_aggregation_result.ipynb`
+For Halo2 game dataset, run `ranking_aggregation_result.ipynb` or `ranking.py`
 
 For AMiner dataset with author H-index, run `aminer_ranking.py`
 
@@ -117,17 +118,11 @@ For AMiner, run `clustering_aminer.py`
 #### Product Return Prediction
 In the `ProductReturnPred` directory,
 
-Make synthetic dataset by `makedata/Simulate data.ipynb` and Prepare dataset for training WHATsNET by `makedata/MakeHypergraph.ipynb`
+Make synthetic dataset by `makedata/Simulate data.ipynb` and Prepare dataset for training models by our benchmark task through `makedata/MakeHypergraph.ipynb`
 
-After training WHATsNET,
-Run `makedata/Prepare_for_Evaluation_OurModel.ipynb`
+After training models, run `makedata/prepare_predicted.py`
 
-Then evaluate on downstreamtask,
-```
-python main_prod.py               # get result of Hypergraph w/ GroundTruth
-python main_prod.py --model_flag  # get result of Hypergraph w/ WHATsNET
-python main_prod.py --unif_flag   # get result of Hypergraph w/o Labels
-```
+Then evaluation of the product return prediction can be done by `script/main_prod.py`
 
 ### Run Ablation Studies
 
@@ -135,6 +130,7 @@ You can also run *all* ablation studies of WHATsNET by
 ```
 cd run
 ./run_ablation.sh
+./run_ablation_centrality.sh
 ```
 
 - - -
