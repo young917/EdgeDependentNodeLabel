@@ -1,6 +1,6 @@
 # Classification of Edge-dependent Labels of Nodes in Hypergraphs
 
-We provide (1) datasets and source code for (2) benchmark task, (3) downstream task and (4) ablation study of WHATsNET in the paper: Classification of Edge-Dependent Labels of Nodes in Hypergraphs, Minyoung Choe, Sunwoo Kim, Jaemin Yoo, and Kijung Shin, KDD 2023.
+We provide (1) datasets and source code for (2) benchmark task, (3) downstream task and (4) ablation study of WHATsNET in the paper: [Classification of Edge-Dependent Labels of Nodes in Hypergraphs](https://arxiv.org/abs/2306.03032), Minyoung Choe, Sunwoo Kim, Jaemin Yoo, and Kijung Shin, KDD 2023.
 
 (1) **Datasets**
 
