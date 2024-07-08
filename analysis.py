@@ -111,7 +111,11 @@ try:
     sampler = dgl.dataloading.NeighborSampler(ls)
 except:
     sampler = dgl.dataloading.MultiLayerNeighborSampler(ls, False)
-dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": target_data}, sampler, batch_size=256, shuffle=True, drop_last=False)
+try:
+    from dgl.dataloading import NodeDataLoader
+except:
+    from dgl.dataloading import DataLoader as NodeDataLoader
+dataloader = NodeDataLoader( g, {"edge": target_data}, sampler, batch_size=256, shuffle=True, drop_last=False)
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)
 
