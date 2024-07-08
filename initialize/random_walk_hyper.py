@@ -219,7 +219,7 @@ def get_src_dst2e(G, edges):
         list1 = sorted(src_dst_2e[k])
         src_dst_2e[k] = list1
     G.src_dst_2e = src_dst_2e
-    G.node_nbr = np.array(node_nbr)
+    G.node_nbr = np.array(node_nbr, dtype=object)
 
 
 def get_alias_n2n_2nd(src, dst):
