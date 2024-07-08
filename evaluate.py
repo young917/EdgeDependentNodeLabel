@@ -117,7 +117,11 @@ if args.embedder == "hcha" or args.embedder == "hnn":
     g = g.to(device)
     test_label = torch.LongTensor(test_label).to(device)
 else:
-    testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
+    try:
+        from dgl.dataloading import NodeDataLoader
+    except:
+        from dgl.dataloading import DataLoader as NodeDataLoader
+    testdataloader = NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
 
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)
