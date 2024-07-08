@@ -345,10 +345,14 @@ if args.use_gpu:
     if args.evaltype == "test":
         test_data = test_data.to(device)
     data.e_feat = data.e_feat.to(device)
-dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": train_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False) # , num_workers=4
-validdataloader = dgl.dataloading.NodeDataLoader( g, {"edge": valid_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False)
+try:
+    from dgl.dataloading import NodeDataLoader
+except:
+    from dgl.dataloading import DataLoader as NodeDataLoader
+dataloader = NodeDataLoader( g, {"edge": train_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False) # , num_workers=4
+validdataloader = NodeDataLoader( g, {"edge": valid_data}, sampler, batch_size=args.bs, shuffle=True, drop_last=False)
 if args.evaltype == "test":
-    testdataloader = dgl.dataloading.NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
+    testdataloader = NodeDataLoader(g, {"edge": test_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False)
 
 args.input_vdim = data.v_feat.size(1)
 args.input_edim = data.e_feat.size(1)
