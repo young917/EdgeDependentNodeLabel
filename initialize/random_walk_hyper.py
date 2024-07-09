@@ -13,6 +13,8 @@ import os
 os.environ["KMP_AFFINITY"] = 'none'
 # os.environ["KMP_AFFINITY"]="scatter"
 
+# for compatibility with new versions of numpy
+np.int = int
 
 # FIXME: may be there is more efficient method
 
@@ -219,7 +221,8 @@ def get_src_dst2e(G, edges):
         list1 = sorted(src_dst_2e[k])
         src_dst_2e[k] = list1
     G.src_dst_2e = src_dst_2e
-    G.node_nbr = np.array(node_nbr)
+    # G.node_nbr = np.array(node_nbr)
+    G.node_nbr = [np.array(nbr) for nbr in node_nbr]
 
 
 def get_alias_n2n_2nd(src, dst):
