@@ -81,7 +81,11 @@ if args.use_gpu:
     hedge_data = allhedges.to(device)
 else:
     hedge_data = allhedges
-dataloader = dgl.dataloading.NodeDataLoader( g, {"edge": hedge_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False) # , num_workers=4
+try:
+    from dgl.dataloading import NodeDataLoader
+except:
+    from dgl.dataloading import DataLoader as NodeDataLoader
+dataloader = NodeDataLoader( g, {"edge": hedge_data}, fullsampler, batch_size=args.bs, shuffle=False, drop_last=False) # , num_workers=4
 
 # init embedder
 args.input_vdim = 48
