@@ -101,10 +101,7 @@ except:
 
 if args.use_gpu:
     g = g.to(device)
-    train_data = train_data.to(device)
-    valid_data = valid_data.to(device)
-    if args.evaltype == "test":
-        test_data = test_data.to(device)
+    test_data = test_data.to(device)
     data.e_feat = data.e_feat.to(device)
     
 if args.embedder == "hcha" or args.embedder == "hnn":
